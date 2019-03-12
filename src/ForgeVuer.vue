@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ViewerServices from './services/ViewerServices.js';
+import { ViewerService } from './services/ViewerServices.js';
 import axios from 'axios';
 
 export default {
@@ -23,7 +23,7 @@ export default {
     
     data() {
         return {
-            ViewerSDK: null,
+            viewerService: null,
             token: null,
             timeout: 3600000,
             expires: null,
@@ -36,12 +36,13 @@ export default {
         if(!window.Autodesk){
             throw new Error("Forge Viewer js missing. Make sure you add it on the HTML header");
         }else{
-            this.ViewerSDK = window.Autodesk;
+            this.viewerService = new ViewerService(window.Autodesk);
         }
 
         // Initializing setToken prop function
         if(typeof this.setToken !== 'function'){
-            throw new Error(`The 'setToken' prop needs to be a function implementing a callback passing in the generated token.`)
+            throw new Error(`The 'setToken' prop needs to be a function 
+                implementing a callback passing in the generated token and expire timeout in miliseconds.`)
         }else{
             this.setToken(this._setToken);
             this._setRefreshInterval();
@@ -51,11 +52,10 @@ export default {
         // let items = await ViewerServices.GetBucketObjects(this.token, 'sdasdasd');
         // //console.log(items);
 
-        // ViewerServices.LaunchViewer(
-        //     'fv-container',
-        //     this.token,
-        //     this.urn,
-        // )
+        // Creating a new instance of the ViewerService
+        
+
+        this.viewerService.LaunchViewer('fv-container', this.token, this.urn);
     },
     methods: {
         /**
@@ -75,7 +75,6 @@ export default {
             this.token = token;
             this.timeout = timeout;
             this.expires = Date.now() + timeout;
-            console.log(`Token refreshed ${this.token}`);
         }
     }
 }
