@@ -1,89 +1,90 @@
 <template>
-    <div class="inline" v-if="user">
-        <a href="#" class="user-pop" v-on:mouseover="hover" v-on:mouseout="hoverOut">
-        {{ main }}
-        </a>
-        <div class="user-popover" v-if="showPopup" transition="fade" v-on:mouseover="hoverInfo" v-on:mouseout="hoverOutInfo">
-        <div class="user-popover--img" v-bind:style="{ backgroundImage: 'url('+user.profile.profile_image+')' }">
-            <h3 class="img-inner">{{ user.name }}</h3>
-        </div>
-        <div class="col-md-12">
-            <p>{{ user.username }}</p>
-        </div>
-        <div class="col-md-12" v-if="user.email">
-            <p>{{ user.email }}</p>
-        </div>
-        </div>
+    <div class="fv-container" id="fv-container">
+        
     </div>
 </template>
 
 <script>
-    export default {
-        props: ['user', 'main'],
-        data() {
-            return {
-                timer: '',
-                isInInfo: false,
-                showPopup: false,
-            }
+import ViewerServices from './services/ViewerServices.js';
+import axios from 'axios';
+
+export default {
+    name: 'ForgeVuer',
+    props:{
+        setToken: {
+            type: Function,
+            required: true
         },
-        methods: {
-            hover: () => {
-                this.timer = setTimeout(() => this.showPopover(), 600)
-            },
-            hoverOut: () => {
-                clearTimeout(this.timer);
-                this.timer = setTimeout(() => {
-                    if ( ! this.isInInfo) {
-                        this.closePopover();
-                    }
-                }, 200);
-            },
-            hoverInfo: () => this.isInInfo = true,
-            hoverOutInfo: () => {
-                this.isInInfo = false;
-                this.hoverOut()
-            },
-            showPopover: () => this.showPopup = true,
-            closePopover: () => this.showPopup = false,
+        urn:{
+            type: String,
+            required: true
+        }
+    },
+    
+    data() {
+        return {
+            ViewerSDK: null,
+            token: null,
+            timeout: 3600000,
+            expires: null,
+        }
+    },
+    mounted: async function(){
+        console.log("vuer has been mounted!");        
+
+        // Retrieving Autodesk global object.
+        if(!window.Autodesk){
+            throw new Error("Forge Viewer js missing. Make sure you add it on the HTML header");
+        }else{
+            this.ViewerSDK = window.Autodesk;
+        }
+
+        // Initializing setToken prop function
+        if(typeof this.setToken !== 'function'){
+            throw new Error(`The 'setToken' prop needs to be a function implementing a callback passing in the generated token.`)
+        }else{
+            this.setToken(this._setToken);
+            this._setRefreshInterval();
+        }
+        
+
+        // let items = await ViewerServices.GetBucketObjects(this.token, 'sdasdasd');
+        // //console.log(items);
+
+        // ViewerServices.LaunchViewer(
+        //     'fv-container',
+        //     this.token,
+        //     this.urn,
+        // )
+    },
+    methods: {
+        /**
+         * Setting the component to refresh the user input token logic
+         * after the timeout 
+         */
+        _setRefreshInterval: function(){
+           setInterval(() => {
+               this.setToken(this._setToken);
+           }, this.timeout);
+        },
+
+        /**
+         * Callback function to be call from setToken prop
+         */
+        _setToken: function(token, timeout = 3600000 ){
+            this.token = token;
+            this.timeout = timeout;
+            this.expires = Date.now() + timeout;
+            console.log(`Token refreshed ${this.token}`);
         }
     }
+}
 </script>
 
-<style>
-    .user-pop{
-      color: inherit;
-      text-decoration: none;
-    }
-    .user-pop:hover{
-        text-decoration: none;
-        color: inherit;
-    }
-    .user-popover{
-            position: absolute;
-            width: 200px;
-            background: #fff;
-            border: none;
-            border-radius: 5px;
-            box-shadow: 0 6px 6px rgba(16, 16, 16, 0.04), 0 6px 6px rgba(0, 0, 0, 0.05);
-            z-index:999;
-            text-align: left;
-     }
-     .user-popover--img{
-      background: rgb(237, 27, 27);
-      background-position: center !important;
-      background-size: cover !important;
-      height: 100px;
-      width: 100%;
-      padding: 12px;
-      text-align:left;
-      vertical-align: bottom;
-    }
-    .user-popover--inner{
-      padding: 10px;
-    }
-    .img-inner{
-      color:rgb(237, 27, 27);
-      font-size: 17px;
-    }
+<style lang="scss" scoped>
+.fv-container{
+    width: 100%;
+    height: 100%;
+    background-color: beige
+}
 </style>

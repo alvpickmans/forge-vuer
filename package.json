@@ -10,6 +10,9 @@
   "author": "Alvaro Ortega Pickmans",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.18.0",
+    "forge-apis": "^0.4.5",
+    "three": "^0.102.1",
     "vue": "^2.6.8"
   },
   "devDependencies": {
