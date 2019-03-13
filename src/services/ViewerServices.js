@@ -23,16 +23,14 @@ const AddCustomExtensions = function(viewing, baseExtension, customExtensions){
 
   for(let i = 0; i < extensionNames.length; i++){
     let name = extensionNames[i];
-    let extension = customExtensions[name];
+    let ExtensionCtor = customExtensions[name];
 
-    let extended = new extension(baseExtension);
-    console.log(extension);
-    
+    let extended = new ExtensionCtor(baseExtension);
     
     let result = viewing.theExtensionManager.registerExtension(name, extended);
-    console.log(result);
-    
-    registeredEvents.push(name);
+    if(result === true){
+      registeredEvents.push(name);
+    }
   }
 
   return registeredEvents;
