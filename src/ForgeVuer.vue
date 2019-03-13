@@ -1,6 +1,7 @@
 <template>
-    <div class="fv-container" id="fv-container">
-        
+    <div class="forge-vuer-container" >
+        <div class="forge-vuer-viewer-display" id="fv-container"/>
+        <slot />
     </div>
 </template>
 
@@ -18,6 +19,16 @@ export default {
         urn:{
             type: String,
             required: true
+        },
+
+        extensions:{
+            type: Object
+        }
+    },
+
+    watch: {
+        urn: function(){
+            this.viewerService.LoadDocument(this.urn);
         }
     },
     
@@ -37,6 +48,10 @@ export default {
             throw new Error("Forge Viewer js missing. Make sure you add it on the HTML header");
         }else{
             this.viewerService = new ViewerService(window.Autodesk);
+
+            if(this.extensions && Object.keys(this.extensions).length > 0){
+                this.viewerService.SetCustomExtensions(this.extensions);
+            }
         }
 
         // Initializing setToken prop function
@@ -53,9 +68,13 @@ export default {
         // //console.log(items);
 
         // Creating a new instance of the ViewerService
-        
+        this.viewerService.LaunchViewer('fv-container', this.token, this.timeout);
 
-        this.viewerService.LaunchViewer('fv-container', this.token, this.urn);
+        // If a urn is supplied, load it to viewer;
+        if(this.urn != null && typeof this.urn === 'string'){
+            this.viewerService.LoadDocument(this.urn);
+        }
+
     },
     methods: {
         /**
@@ -81,9 +100,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.fv-container{
+.forge-vuer-container{
     width: 100%;
+    height: 80%;
+    background-color: beige;
+    position: relative;
+}
+
+.forge-vuer-viewer-display{
     height: 100%;
-    background-color: beige
 }
 </style>
