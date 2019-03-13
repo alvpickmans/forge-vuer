@@ -38,10 +38,13 @@ export default {
             token: null,
             timeout: 3600000,
             expires: null,
+            events: [],
         }
     },
+    created: function(){
+        //this.dispatch(this._events[0]);
+    },
     mounted: async function(){
-        console.log("vuer has been mounted!");        
 
         // Retrieving Autodesk global object.
         if(!window.Autodesk){
@@ -62,13 +65,14 @@ export default {
             this.setToken(this._setToken);
             this._setRefreshInterval();
         }
-        
-
-        // let items = await ViewerServices.GetBucketObjects(this.token, 'sdasdasd');
-        // //console.log(items);
+               
 
         // Creating a new instance of the ViewerService
         this.viewerService.LaunchViewer('fv-container', this.token, this.timeout);
+
+        // If any event, try to add it to the Viewer instance
+        this.events = Object.keys(this.$listeners);
+        this.viewerService.RegisterEvents(this, this.events);
 
         // If a urn is supplied, load it to viewer;
         if(this.urn != null && typeof this.urn === 'string'){

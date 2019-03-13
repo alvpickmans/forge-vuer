@@ -2,10 +2,10 @@ function onDocumentLoadFailure(viewerErrorCode) {
   console.error('onDocumentLoadFailure() - errorCode:' + viewerErrorCode);
 }
 
-function onItemLoadSuccess(viewer, item) {
+function onLoadModelSuccess(viewer, item) {
   // item loaded, any custom action?
 }
-function onItemLoadFail(errorCode) {
+function onLoadModelError(errorCode) {
   console.error('onItemLoadFail() - errorCode:' + errorCode);
 }
 
@@ -37,6 +37,13 @@ const AddCustomExtensions = function(viewing, baseExtension, customExtensions){
 
 }
 
+const VueToViewer3DEvent = function(eventName){
+  // Vuer component events should be on the same as Viewer3D's,
+  // but low case and hypen insted of underscore
+
+  return eventName.toUpperCase().replace(/-/g, '_');
+}
+
 
 /**
  * Creates a new ViewerService object to handle viewer interaction
@@ -63,7 +70,8 @@ export class ViewerService {
      */
     this.CustomExtensions= {};
 
-    this.ViewerApp;
+    this.ViewerContainer;
+    this.Viewer3D;
 
   }
 
@@ -73,6 +81,15 @@ export class ViewerService {
 
   HasCustomExtensions = function(){
     return this.CustomExtensions && Object.keys(this.CustomExtensions).length > 0;
+  }
+
+  GetViewer3DConfig = function(){
+    let config3d = {};
+
+    if(this.HasCustomExtensions()){
+      let registered = AddCustomExtensions(this.Viewing, this.Extension, this.CustomExtensions);      
+      config3d['extensions'] = registered;
+    }
   }
 
   /**
@@ -87,20 +104,10 @@ export class ViewerService {
       }
     };
 
-    let config3d = {};
 
-    if(this.HasCustomExtensions()){
-      let registered = AddCustomExtensions(this.Viewing, this.Extension, this.CustomExtensions);
-      console.log(registered);
-      
-      config3d['extensions'] = registered;
-    }
-  
-    this.Viewing.Initializer(options, function onInitialized() {
-      this.ViewerApp = new this.Viewing.ViewingApplication(containerId);
-      this.ViewerApp.registerViewer(this.ViewerApp.k3D, this.Viewing.Private.GuiViewer3D, config3d);
-      //this.ViewerApp.loadDocument(documentId, this.onDocumentLoadSuccess.bind(this), onDocumentLoadFailure);
-    }.bind(this));
+    this.Viewing.Initializer(options);
+    this.ViewerContainer = document.getElementById(containerId);
+
   }
 
   /**
@@ -108,23 +115,46 @@ export class ViewerService {
    */
   LoadDocument = function(urn){
     let documentId = `urn:${urn}`;
-  
-    this.ViewerApp.loadDocument(documentId, this.onDocumentLoadSuccess.bind(this), onDocumentLoadFailure);
+    this.Viewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), onDocumentLoadFailure);
+    
   }
 
 
   onDocumentLoadSuccess = function(doc) {
-    // We could still make use of Document.getSubItemsWithProperties()
-    // However, when using a ViewingApplication, we have access to the **bubble** attribute,
-    // which references the root node of a graph that wraps each object from the Manifest JSON.
-    var viewables = this.ViewerApp.bubble.search({ 'type': 'geometry' });
-    if (viewables.length === 0) {
-      console.error('Document contains no viewables.');
-      return;
+
+    let geometries = doc.getRoot().search({'type':'geometry'});
+    if (geometries.length === 0) {
+        console.error('Document contains no geometries.');
+        return;
     }
   
-    // Choose any of the avialble viewables
-    this.ViewerApp.selectItem(viewables[0], onItemLoadSuccess, onItemLoadFail);
+    // Load the chosen geometry
+    var svfUrl = doc.getViewablePath(geometries[0]);
+    var modelOptions = {
+        sharedPropertyDbPath: doc.getPropertyDbPath()
+    };
+    
+    // If Viewer3D is null, it needs to be created and started.
+    if(this.Viewer3D == null){
+      this.Viewer3D = new this.Viewing.Private.GuiViewer3D(this.ViewerContainer, this.GetViewer3DConfig());
+      this.Viewer3D.start(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
+    }
+    else{
+      this.Viewer3D.tearDown();
+      this.Viewer3D.load(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
+    }
+    
   }
 
+  /**
+   * Register the View3D events according to those supplied by
+   * the Vuer component
+   */
+  RegisterEvents = function(vueInstance, eventNames){
+    
+    eventNames.forEach(name => {
+      let viewerEvent = VueToViewer3DEvent(name);
+    });
+
+  }
 }
