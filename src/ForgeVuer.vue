@@ -50,7 +50,10 @@ export default {
         if(!window.Autodesk){
             throw new Error("Forge Viewer js missing. Make sure you add it on the HTML header");
         }else{
-            this.viewerService = new ViewerService(window.Autodesk);
+            this.viewerService = new ViewerService(window.Autodesk, this);
+            // If any event, try to add it to the Viewer instance
+            this.events = Object.keys(this.$listeners);
+            this.viewerService.SetEvents(this.events);
 
             if(this.extensions && Object.keys(this.extensions).length > 0){
                 this.viewerService.SetCustomExtensions(this.extensions);
@@ -70,14 +73,12 @@ export default {
         // Creating a new instance of the ViewerService
         this.viewerService.LaunchViewer('fv-container', this.token, this.timeout);
 
-        // If any event, try to add it to the Viewer instance
-        this.events = Object.keys(this.$listeners);
-        this.viewerService.RegisterEvents(this, this.events);
-
         // If a urn is supplied, load it to viewer;
         if(this.urn != null && typeof this.urn === 'string'){
             this.viewerService.LoadDocument(this.urn);
+            
         }
+
 
     },
     methods: {

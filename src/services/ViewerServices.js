@@ -1,13 +1,4 @@
-function onDocumentLoadFailure(viewerErrorCode) {
-  console.error('onDocumentLoadFailure() - errorCode:' + viewerErrorCode);
-}
 
-function onLoadModelSuccess(viewer, item) {
-  // item loaded, any custom action?
-}
-function onLoadModelError(errorCode) {
-  console.error('onItemLoadFail() - errorCode:' + errorCode);
-}
 
 /**
  * 
@@ -44,6 +35,14 @@ const VueToViewer3DEvent = function(eventName){
   return eventName.toUpperCase().replace(/-/g, '_');
 }
 
+const CreateEmitterFunction = function(vue, name){
+  return (...prop) => { 
+    let p = Object.assign({}, ...prop);
+    delete p.target;
+    delete p.type;
+    vue.$emit(name, p);
+   };
+}
 
 /**
  * Creates a new ViewerService object to handle viewer interaction
@@ -52,9 +51,15 @@ const VueToViewer3DEvent = function(eventName){
 export class ViewerService {
 
   Viewing = null;
-  ViewerApp = null;
+  Viewer3D = null;
+  /**
+   * Events is an object storing the vue name of the event
+   * and the function applied to Viewer3D, so it can be removed later on.
+   */
+  Events = {};
+  VueInstance = null;
 
-  constructor(ViewerSDK){
+  constructor(ViewerSDK, VueInstance){
     /**
      * Autodesk.Viewing object
      */
@@ -65,24 +70,24 @@ export class ViewerService {
      */
     this.Extension = ViewerSDK.Viewing.Extension;
 
+    this.VueInstance = VueInstance;
     /**
      * Custom Extensions loaded by client
      */
     this.CustomExtensions= {};
 
     this.ViewerContainer;
-    this.Viewer3D;
 
   }
 
   SetCustomExtensions = function(extensions){
     this.CustomExtensions = extensions;
   }
-
+  
   HasCustomExtensions = function(){
     return this.CustomExtensions && Object.keys(this.CustomExtensions).length > 0;
   }
-
+  
   GetViewer3DConfig = function(){
     let config3d = {};
 
@@ -90,6 +95,18 @@ export class ViewerService {
       let registered = AddCustomExtensions(this.Viewing, this.Extension, this.CustomExtensions);      
       config3d['extensions'] = registered;
     }
+
+    return config3d;
+  }
+
+
+  SetEvents = function(events){
+    
+    this.Events = events.filter(name => name.endsWith('-event')).reduce((acc, name) => {
+      acc[name] = null;
+      return acc;
+    }, {});
+    
   }
 
   /**
@@ -115,11 +132,43 @@ export class ViewerService {
    */
   LoadDocument = function(urn){
     let documentId = `urn:${urn}`;
-    this.Viewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), onDocumentLoadFailure);
+    this.Viewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), this.onDocumentLoadError.bind(this));
     
   }
 
+  /**
+   * Register the View3D events according to those supplied by
+   * the Vuer component
+   */
+  RegisterEvents = function(){
+    if (this.Viewer3D == null) {
+      throw new Error("jeeeez, viewer hasn't been started.");
+    }
 
+    let eventNames = Object.keys(this.Events);
+    if(eventNames.length > 0) {
+
+      for(let i = 0; i < eventNames.length; i++){
+        const vueEventname = eventNames[i];
+        const viewerEventName = VueToViewer3DEvent(vueEventname);
+        const eventType = this.Viewing[viewerEventName];
+        
+        if(eventType != null){
+          let emitterFunction = CreateEmitterFunction(this.VueInstance, vueEventname);
+          this.Events[vueEventname] = emitterFunction;
+          
+          this.Viewer3D.addEventListener(eventType, emitterFunction);
+        }else{
+          console.log(`Event '${vueEventname}' doesn't exist on Forge Viewer`);
+        }
+      }
+
+    }
+    
+
+  }
+
+  
   onDocumentLoadSuccess = function(doc) {
 
     let geometries = doc.getRoot().search({'type':'geometry'});
@@ -137,24 +186,25 @@ export class ViewerService {
     // If Viewer3D is null, it needs to be created and started.
     if(this.Viewer3D == null){
       this.Viewer3D = new this.Viewing.Private.GuiViewer3D(this.ViewerContainer, this.GetViewer3DConfig());
-      this.Viewer3D.start(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
+      this.Viewer3D.start(svfUrl, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
+      this.RegisterEvents();
     }
     else{
       this.Viewer3D.tearDown();
-      this.Viewer3D.load(svfUrl, modelOptions, onLoadModelSuccess, onLoadModelError);
+      this.Viewer3D.load(svfUrl, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
     }
     
   }
 
-  /**
-   * Register the View3D events according to those supplied by
-   * the Vuer component
-   */
-  RegisterEvents = function(vueInstance, eventNames){
-    
-    eventNames.forEach(name => {
-      let viewerEvent = VueToViewer3DEvent(name);
-    });
-
+  onDocumentLoadError = function (errorCode) {
+    this.VueInstance.$emit('onDocumentLoadError', errorCode);
+  }
+  
+  onModelLoaded = function (item) {
+    this.VueInstance.$emit('onModelLoaded', item);
+  }
+  
+  onModelLoadError = function (errorCode) {
+    this.VueInstance.$emit('onModelLoadError', errorCode);
   }
 }
