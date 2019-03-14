@@ -12,7 +12,7 @@ import axios from 'axios';
 export default {
     name: 'ForgeVuer',
     props:{
-        setToken: {
+        setAccessToken: {
             type: Function,
             required: true
         },
@@ -49,7 +49,12 @@ export default {
         // Retrieving Autodesk global object.
         if(!window.Autodesk){
             throw new Error("Forge Viewer js missing. Make sure you add it on the HTML header");
-        }else{
+        }
+        else if(typeof this.setAccessToken !== 'function'){
+            throw new Error(`The 'setToken' prop needs to be a function 
+                implementing a callback passing in the generated token and expire timeout in miliseconds.`)
+        }
+        else{
             this.viewerService = new ViewerService(window.Autodesk, this);
             // If any event, try to add it to the Viewer instance
             this.events = Object.keys(this.$listeners);
@@ -58,26 +63,18 @@ export default {
             if(this.extensions && Object.keys(this.extensions).length > 0){
                 this.viewerService.SetCustomExtensions(this.extensions);
             }
-        }
 
-        // Initializing setToken prop function
-        if(typeof this.setToken !== 'function'){
-            throw new Error(`The 'setToken' prop needs to be a function 
-                implementing a callback passing in the generated token and expire timeout in miliseconds.`)
-        }else{
-            this.setToken(this._setToken);
-            this._setRefreshInterval();
+            // Creating a new instance of the ViewerService
+            this.viewerService.LaunchViewer('fv-container', this.setAccessToken);
+
+            // If a urn is supplied, load it to viewer;
+            if(this.urn != null && typeof this.urn === 'string'){
+                this.viewerService.LoadDocument(this.urn);
+                
+            }
         }
                
 
-        // Creating a new instance of the ViewerService
-        this.viewerService.LaunchViewer('fv-container', this.token, this.timeout);
-
-        // If a urn is supplied, load it to viewer;
-        if(this.urn != null && typeof this.urn === 'string'){
-            this.viewerService.LoadDocument(this.urn);
-            
-        }
 
 
     },

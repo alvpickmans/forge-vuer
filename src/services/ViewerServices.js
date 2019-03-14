@@ -112,13 +112,11 @@ export class ViewerService {
   /**
    * Initialize a viewer Instance given the DOM container id, token and timeout
    */
-  LaunchViewer = function (containerId, token, timeout = 3600*1000) {
-
+  LaunchViewer = function (containerId, getTokenMethod) {
+    
     let options = {
       env: 'AutodeskProduction',
-      getAccessToken: function (onSuccess) {
-        onSuccess(token, timeout);
-      }
+      getAccessToken: getTokenMethod
     };
 
 
