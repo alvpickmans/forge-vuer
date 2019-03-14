@@ -2,11 +2,11 @@
 
 /**
  *
- * @param {Object} viewing Autodesk's Viewing
+ * @param {Object} autodeskViewing Autodesk's Viewing
  * @param {Function} baseExtension Autodesk.Viewing.Extension
  * @param {Object} customExtensions Custom extensions
  */
-const AddCustomExtensions = function(viewing, baseExtension, customExtensions){
+const AddCustomExtensions = function(autodeskViewing, baseExtension, customExtensions){
 
   let extensionNames = Object.keys(customExtensions);
 
@@ -16,9 +16,9 @@ const AddCustomExtensions = function(viewing, baseExtension, customExtensions){
     let name = extensionNames[i];
     let ExtensionCtor = customExtensions[name];
 
-    let extended = new ExtensionCtor(baseExtension);
+    let extended = new ExtensionCtor(baseExtension, autodeskViewing);
 
-    let result = viewing.theExtensionManager.registerExtension(name, extended);
+    let result = autodeskViewing.theExtensionManager.registerExtension(name, extended);
     if(result === true){
       registeredEvents.push(name);
     }
@@ -54,7 +54,7 @@ const EmitError = function(vue, error){
  */
 export class ViewerService {
 
-  Viewing = null;
+  AutodeskViewing = null;
   Viewer3D = null;
   /**
    * Events is an object storing the vue name of the event
@@ -63,16 +63,16 @@ export class ViewerService {
   Events = {};
   VueInstance = null;
 
-  constructor(ViewerSDK, VueInstance){
+  constructor(Autodesk, VueInstance){
     /**
      * Autodesk.Viewing object
      */
-    this.Viewing = ViewerSDK.Viewing;
+    this.AutodeskViewing = Autodesk.Viewing;
 
     /**
      * Autodesk.Vieweing.Extensions function
      */
-    this.Extension = ViewerSDK.Viewing.Extension;
+    this.Extension = Autodesk.Viewing.Extension;
 
     this.VueInstance = VueInstance;
     /**
@@ -96,7 +96,7 @@ export class ViewerService {
     let config3d = {};
 
     if(this.HasCustomExtensions()){
-      let registered = AddCustomExtensions(this.Viewing, this.Extension, this.CustomExtensions);
+      let registered = AddCustomExtensions(this.AutodeskViewing, this.Extension, this.CustomExtensions);
       config3d['extensions'] = registered;
     }
 
@@ -126,7 +126,7 @@ export class ViewerService {
 
     try {
       this.ViewerContainer = document.getElementById(containerId);
-      this.Viewing.Initializer(options);
+      this.AutodeskViewing.Initializer(options);
       //this.VueInstance.$emit('onViewingInitialized', this.Vi)
     } catch (error) {
       EmitError(this.VueInstance, error);
@@ -140,7 +140,7 @@ export class ViewerService {
   LoadDocument = function(urn){
     let documentId = `urn:${urn}`;
     try {
-      this.Viewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), this.onDocumentLoadError.bind(this));
+      this.AutodeskViewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), this.onDocumentLoadError.bind(this));
     } catch (error) {
       EmitError(this.VueInstance, error);
     }
@@ -159,7 +159,7 @@ export class ViewerService {
       for(let i = 0; i < eventNames.length; i++){
         const vueEventname = eventNames[i];
         const viewerEventName = VueToViewer3DEvent(vueEventname);
-        const eventType = this.Viewing[viewerEventName];
+        const eventType = this.AutodeskViewing[viewerEventName];
 
         if(eventType != null){
           let emitterFunction = CreateEmitterFunction(this.VueInstance, vueEventname);
@@ -193,7 +193,7 @@ export class ViewerService {
 
     // If Viewer3D is null, it needs to be created and started.
     if(this.Viewer3D == null){
-      this.Viewer3D = new this.Viewing.Private.GuiViewer3D(this.ViewerContainer, this.GetViewer3DConfig());
+      this.Viewer3D = new this.AutodeskViewing.Private.GuiViewer3D(this.ViewerContainer, this.GetViewer3DConfig());
       this.Viewer3D.start(svfUrl, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
       this.RegisterEvents();
 
