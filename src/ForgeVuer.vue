@@ -1,6 +1,6 @@
 <template>
     <div class="forge-vuer-container" >
-        <div class="forge-vuer-viewer-display" id="fv-container"/>
+        <div class="forge-vuer-viewer-display" :id="containerId"/>
         <slot />
     </div>
 </template>
@@ -12,6 +12,14 @@ import axios from 'axios';
 export default {
     name: 'ForgeVuer',
     props:{
+
+        containerId:{
+            type: String,
+            default: function(){
+                return 'fv-container'
+            }
+        },
+
         setAccessToken: {
             type: Function,
             required: true
@@ -41,9 +49,6 @@ export default {
             events: [],
         }
     },
-    created: function(){
-        //this.dispatch(this._events[0]);
-    },
     mounted: async function(){
 
         // Retrieving Autodesk global object.
@@ -52,7 +57,7 @@ export default {
         }
         else if(typeof this.setAccessToken !== 'function'){
             throw new Error(`The 'setToken' prop needs to be a function 
-                implementing a callback passing in the generated token and expire timeout in miliseconds.`)
+                implementing a callback passing in the generated token and expire timeout in seconds.`)
         }
         else{
             this.viewerService = new ViewerService(window.Autodesk, this);
@@ -63,14 +68,12 @@ export default {
             if(this.extensions && Object.keys(this.extensions).length > 0){
                 this.viewerService.SetCustomExtensions(this.extensions);
             }
-
             // Creating a new instance of the ViewerService
-            this.viewerService.LaunchViewer('fv-container', this.setAccessToken);
+            await this.viewerService.LaunchViewer(this.containerId, this.setAccessToken);
 
             // If a urn is supplied, load it to viewer;
             if(this.urn != null && typeof this.urn === 'string'){
                 this.viewerService.LoadDocument(this.urn);
-                
             }
         }
                
@@ -92,7 +95,7 @@ export default {
         /**
          * Callback function to be call from setToken prop
          */
-        _setToken: function(token, timeout = 3600000 ){
+        _setToken: function(token, timeout = 3600 ){
             this.token = token;
             this.timeout = timeout;
             this.expires = Date.now() + timeout;

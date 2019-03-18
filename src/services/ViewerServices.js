@@ -116,21 +116,25 @@ export class ViewerService {
   /**
    * Initialize a viewer Instance given the DOM container id, token and timeout
    */
-  LaunchViewer = function (containerId, getTokenMethod) {
+  LaunchViewer = async function (containerId, getTokenMethodAsync) {
 
     let options = {
       env: 'AutodeskProduction',
-      getAccessToken: getTokenMethod
+      getAccessToken: getTokenMethodAsync
     };
 
-
-    try {
-      this.ViewerContainer = document.getElementById(containerId);
-      this.AutodeskViewing.Initializer(options);
-      //this.VueInstance.$emit('onViewingInitialized', this.Vi)
-    } catch (error) {
-      EmitError(this.VueInstance, error);
-    }
+    return new Promise((resolve, reject) => {
+      try {
+        this.ViewerContainer = document.getElementById(containerId);
+        this.AutodeskViewing.Initializer(options, () => {
+          resolve(true);
+        });
+        
+      } catch (error) {
+        EmitError(this.VueInstance, error);
+        reject(error);
+      }
+    })
 
   }
 
