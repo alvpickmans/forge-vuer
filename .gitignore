@@ -90,4 +90,6 @@ node_modules
 docs/_book
 test/
 
+dist/
+
 # End of https://www.gitignore.io/api/node,vuejs

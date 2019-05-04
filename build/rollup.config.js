@@ -11,9 +11,9 @@ export default {
         exports: 'named',
     },
     plugins: [
-        babel({
-            plugins: ['transform-class-properties'],
-        }),
+        // babel({
+        //     plugins: ['transform-class-properties'],
+        // }),
         commonjs(),
         vue({
             css: true, // Dynamically inject css as a <style> tag

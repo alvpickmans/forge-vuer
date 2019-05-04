@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { ViewerService } from './services/ViewerServices.js';
+import { ViewerService } from './services/ViewerService.js';
 
 export default {
     name: 'ForgeVuer',
