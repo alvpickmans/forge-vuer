@@ -7,7 +7,6 @@
 
 <script>
 import { ViewerService } from './services/ViewerServices.js';
-import axios from 'axios';
 
 export default {
     name: 'ForgeVuer',
@@ -104,11 +103,10 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style>
 .forge-vuer-container{
     width: 100%;
-    height: 80%;
-    background-color: beige;
+    height: 100%;
     position: relative;
 }
 

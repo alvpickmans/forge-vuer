@@ -2,34 +2,32 @@
   "name": "forge-vuer",
   "version": "0.0.1",
   "description": "Vue Component for Autodesk Forge Viewer",
-  "main": "index.js",
+  "main": "dist/ForgeVuer.umd.js",
+  "module": "dist/ForgeVuer.esm.js",
+  "unpkg": "dist/ForgeVuer.min.js",
+  "browser": {
+    "./sfc": "src/ForgeVuer.vue"
+  },
   "scripts": {
-    "dev": "webpack --progress --mode development",
-    "build": "webpack --progress --mode production"
+    "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
+    "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/ForgeVuer.umd.js",
+    "build:es": "rollup --config build/rollup.config.js --format es --file dist/ForgeVuer.esm.js",
+    "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/ForgeVuer.min.js"
   },
   "author": "Alvaro Ortega Pickmans",
   "license": "MIT",
-  "dependencies": {
-    "axios": "^0.18.0",
-    "forge-apis": "^0.4.5",
-    "three": "^0.102.1",
-    "vue": "^2.6.8"
-  },
   "devDependencies": {
-    "@babel/core": "^7.3.4",
-    "@babel/preset-env": "^7.3.4",
-    "babel-loader": "^8.0.5",
-    "babel-preset-vue": "^2.0.2",
-    "css-loader": "^2.1.1",
-    "node-sass": "^4.11.0",
-    "sass-loader": "^7.1.0",
-    "vue-loader": "^15.7.0",
-    "vue-style-loader": "^4.1.2",
-    "vue-template-compiler": "^2.6.8",
-    "webpack": "^4.29.6",
-    "webpack-bundle-analyzer": "^3.1.0",
-    "webpack-cli": "^3.2.3",
-    "webpack-dev-server": "^3.2.1",
-    "webpack-merge": "^4.2.1"
-  }
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "rollup": "^0.57.1",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-buble": "^0.19.6",
+    "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-terser": "^4.0.4",
+    "rollup-plugin-vue": "^5.0.0",
+    "vue": "^2.6.10",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "dependencies": {}
 }
