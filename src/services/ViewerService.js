@@ -76,7 +76,7 @@ const ViewerService = function(Autodesk, VueInstance) {
 
   // If any event, try to add it to the Viewer instance
   let events = Object.keys(this.VueInstance.$listeners);
-  this.viewerService.SetEvents(events);
+  this.SetEvents(events);
 }
 
 /**
@@ -110,7 +110,7 @@ ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
  * @param {Object} extensions Object where keys will be the extensions names and values should be functions to initialize new extensions.
  */
 ViewerService.prototype.SetCustomExtensions = function(extensions){
-  if(Object.values(extension).some(value => typeof(value) != 'fuction')){
+  if(Object.values(extensions).some(value => typeof(value) != 'function')){
     throw new Error("Extensions should be an object where its values are valid extension functions.");
   }
 
