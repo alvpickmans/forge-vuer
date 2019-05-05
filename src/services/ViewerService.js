@@ -46,6 +46,21 @@ const EmitError = function(vue, error){
   vue.$emit('onError', error);
 }
 
+const GetEncodedURN = function(urn){
+  let encoded;
+  if(urn.indexOf('adsk') != -1){
+    encoded = `urn:${atob(urn)}`;
+  }
+  else if(urn.indexOf('urn') == -1){
+    encoded = `urn:${urn}`;
+  }
+  else{
+    encoded = urn;
+  }
+
+  return encoded;
+}
+
 /**
  * Creates a new ViewerService object to handle viewer interaction
  * @param {Object} Autodesk Forge Viewer Autodesk SDK
@@ -155,10 +170,12 @@ ViewerService.prototype.SetEvents = function(events){
 }
 
 /**
- * Load a document by a given urn
+ * Loads a document by a given urn. If the URN is not base64 encoded, but the id retrieved from the API,
+ * it will try to encoded to base64.
+ * https://forge.autodesk.com/en/docs/model-derivative/v2/tutorials/prepare-file-for-viewer
  */
 ViewerService.prototype.LoadDocument = function(urn){
-  let documentId = `urn:${urn}`;
+  let documentId = GetEncodedURN(urn);
   try {
     this.AutodeskViewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), this.onDocumentLoadError.bind(this));
   } catch (error) {
