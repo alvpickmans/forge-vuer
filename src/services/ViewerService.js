@@ -52,7 +52,7 @@ const EmitError = function(vue, error){
  * Creates a new ViewerService object to handle viewer interaction
  * @param {Object} ViewerSDK Forge Viewer Autodesk SDK
  */
-const viewerService = function(Autodesk, VueInstance) {
+const ViewerService = function(Autodesk, VueInstance) {
 
   /**
    * Autodesk.Viewing object
@@ -72,23 +72,22 @@ const viewerService = function(Autodesk, VueInstance) {
    * and the function applied to Viewer3D, so it can be removed later on.
    */
   this.Events = {};
-  this.VueInstance = null;
 
-  this.CustomExtensions= {};
+  this.CustomExtensions = {};
 
   this.ViewerContainer;
 }
 
 
-viewerService.prototype.SetCustomExtensions = function(extensions){
+ViewerService.prototype.SetCustomExtensions = function(extensions){
   this.CustomExtensions = extensions;
 }
 
-viewerService.prototype.HasCustomExtensions = function(){
+ViewerService.prototype.HasCustomExtensions = function(){
   return this.CustomExtensions && Object.keys(this.CustomExtensions).length > 0;
 }
 
-viewerService.prototype.GetViewer3DConfig = function(){
+ViewerService.prototype.GetViewer3DConfig = function(){
   let config3d = {};
 
   if(this.HasCustomExtensions()){
@@ -100,7 +99,7 @@ viewerService.prototype.GetViewer3DConfig = function(){
 }
 
 
-viewerService.prototype.SetEvents = function(events){
+ViewerService.prototype.SetEvents = function(events){
 
   this.Events = events.filter(name => name.endsWith('-event')).reduce((acc, name) => {
     acc[name] = null;
@@ -112,7 +111,7 @@ viewerService.prototype.SetEvents = function(events){
 /**
  * Initialize a viewer Instance given the DOM container id, token and timeout
  */
-viewerService.prototype.LaunchViewer = async function (containerId, getTokenMethodAsync) {
+ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMethodAsync) {
 
   let options = {
     env: 'AutodeskProduction',
@@ -137,7 +136,7 @@ viewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
 /**
  * Load a document by a given urn
  */
-viewerService.prototype.LoadDocument = function(urn){
+ViewerService.prototype.LoadDocument = function(urn){
   let documentId = `urn:${urn}`;
   try {
     this.AutodeskViewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), this.onDocumentLoadError.bind(this));
@@ -151,7 +150,7 @@ viewerService.prototype.LoadDocument = function(urn){
  * Register the View3D events according to those supplied by
  * the Vuer component
  */
-viewerService.prototype.RegisterEvents = function(){
+ViewerService.prototype.RegisterEvents = function(){
 
   let eventNames = Object.keys(this.Events);
   if(eventNames.length > 0) {
@@ -176,7 +175,7 @@ viewerService.prototype.RegisterEvents = function(){
 
 }
 
-viewerService.prototype.onDocumentLoadSuccess = function(doc) {
+ViewerService.prototype.onDocumentLoadSuccess = function(doc) {
 
   let geometries = doc.getRoot().search({'type':'geometry'});
   if (geometries.length === 0) {
@@ -206,16 +205,16 @@ viewerService.prototype.onDocumentLoadSuccess = function(doc) {
 
 }
 
-viewerService.prototype.onDocumentLoadError = function (errorCode) {
+ViewerService.prototype.onDocumentLoadError = function (errorCode) {
   this.VueInstance.$emit('onDocumentLoadError', errorCode);
 }
 
-viewerService.prototype.onModelLoaded = function (item) {
+ViewerService.prototype.onModelLoaded = function (item) {
   this.VueInstance.$emit('onModelLoaded', item);
 }
 
-viewerService.prototype.onModelLoadError = function (errorCode) {
+ViewerService.prototype.onModelLoadError = function (errorCode) {
   this.VueInstance.$emit('onModelLoadError', errorCode);
 }
 
-export const ViewerService = viewerService;
+export {ViewerService};
