@@ -1,5 +1,3 @@
-
-
 /**
  *
  * @param {Object} autodeskViewing Autodesk's Viewing
@@ -29,8 +27,8 @@ const AddCustomExtensions = function(autodeskViewing, baseExtension, customExten
 }
 
 const VueToViewer3DEvent = function(eventName){
-  // Vuer component events should be on the same as Viewer3D's,
-  // but low case and hypen insted of underscore
+  // Vuer component events should be the same as Viewer3D's,
+  // but low cased and hypen insted of underscore
 
   return eventName.toUpperCase().replace(/-/g, '_');
 }
@@ -50,72 +48,47 @@ const EmitError = function(vue, error){
 
 /**
  * Creates a new ViewerService object to handle viewer interaction
- * @param {Object} ViewerSDK Forge Viewer Autodesk SDK
+ * @param {Object} Autodesk Forge Viewer Autodesk SDK
+ * @param {Object} VueInstance Vue Instance
  */
 const ViewerService = function(Autodesk, VueInstance) {
 
-  /**
-   * Autodesk.Viewing object
-   */
+  // Autodesk Viewing object
   this.AutodeskViewing = Autodesk.Viewing;
 
-  /**
-   * Autodesk.Vieweing.Extensions function
-   */
+  // Autodesk.Vieweing.Extensions function
   this.Extension = Autodesk.Viewing.Extension;
 
+  // Events is an object storing the vue name of the event
+  // and the function applied to Viewer3D, so it can be removed later on.
+  this.Events;
+
+  // Vue instance, store to be able to emit events
   this.VueInstance = VueInstance;
 
+  // Viewer3D instance
   this.Viewer3D = null;
-  /**
-   * Events is an object storing the vue name of the event
-   * and the function applied to Viewer3D, so it can be removed later on.
-   */
-  this.Events = {};
 
-  this.CustomExtensions = {};
+  // Custom Extensions
+  this.CustomExtensions;
 
   this.ViewerContainer;
-}
 
-
-ViewerService.prototype.SetCustomExtensions = function(extensions){
-  this.CustomExtensions = extensions;
-}
-
-ViewerService.prototype.HasCustomExtensions = function(){
-  return this.CustomExtensions && Object.keys(this.CustomExtensions).length > 0;
-}
-
-ViewerService.prototype.GetViewer3DConfig = function(){
-  let config3d = {};
-
-  if(this.HasCustomExtensions()){
-    let registered = AddCustomExtensions(this.AutodeskViewing, this.Extension, this.CustomExtensions);
-    config3d['extensions'] = registered;
-  }
-
-  return config3d;
-}
-
-
-ViewerService.prototype.SetEvents = function(events){
-
-  this.Events = events.filter(name => name.endsWith('-event')).reduce((acc, name) => {
-    acc[name] = null;
-    return acc;
-  }, {});
-
+  // If any event, try to add it to the Viewer instance
+  let events = Object.keys(this.VueInstance.$listeners);
+  this.viewerService.SetEvents(events);
 }
 
 /**
- * Initialize a viewer Instance given the DOM container id, token and timeout
+ * Initialize the a Viewer instance
+ * @param {String} containerId Id of the DOM element to host the viewer
+ * @param {Function} getTokenMethod Function to retrieve the token, which will execute a callback
  */
-ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMethodAsync) {
+ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMethod) {
 
   let options = {
     env: 'AutodeskProduction',
-    getAccessToken: getTokenMethodAsync
+    getAccessToken: getTokenMethod
   };
 
   return new Promise((resolve, reject) => {
@@ -130,6 +103,54 @@ ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
       reject(error);
     }
   })
+}
+
+/**
+ * Sets the CustomExtensions object.
+ * @param {Object} extensions Object where keys will be the extensions names and values should be functions to initialize new extensions.
+ */
+ViewerService.prototype.SetCustomExtensions = function(extensions){
+  if(Object.values(extension).some(value => typeof(value) != 'fuction')){
+    throw new Error("Extensions should be an object where its values are valid extension functions.");
+  }
+
+  this.CustomExtensions = extensions;
+}
+
+/**
+ * Determines if the ViewerService has any custom extensions
+ * @return {Boolean} True if it has any custom extensions.
+ */
+ViewerService.prototype.HasCustomExtensions = function(){
+  return this.CustomExtensions != null && Object.keys(this.CustomExtensions).length > 0;
+}
+
+/**
+ * Creates a new Viewer3DConfig with custom extensions, if any
+ * @returns {Object} Viewer3DConfig
+ */
+ViewerService.prototype.GetViewer3DConfig = function(){
+  let config3d = {};
+
+  if(this.HasCustomExtensions()){
+    let registered = AddCustomExtensions(this.AutodeskViewing, this.Extension, this.CustomExtensions);
+    config3d['extensions'] = registered;
+  }
+
+  return config3d;
+}
+
+/**
+ * Sets, from the VueInstance event names, an object where to later on store
+ * emmiters for the corresponding ForgeViewer events.
+ * @param {String[]} events All Vue instance event names.
+ */
+ViewerService.prototype.SetEvents = function(events){
+
+  this.Events = events.filter(name => name.endsWith('-event')).reduce((acc, name) => {
+    acc[name] = null;
+    return acc;
+  }, {});
 
 }
 
@@ -171,8 +192,6 @@ ViewerService.prototype.RegisterEvents = function(){
     }
 
   }
-
-
 }
 
 ViewerService.prototype.onDocumentLoadSuccess = function(doc) {

@@ -60,9 +60,6 @@ export default {
         }
         else{
             this.viewerService = new ViewerService(window.Autodesk, this);
-            // If any event, try to add it to the Viewer instance
-            this.events = Object.keys(this.$listeners);
-            this.viewerService.SetEvents(this.events);
 
             if(this.extensions && Object.keys(this.extensions).length > 0){
                 this.viewerService.SetCustomExtensions(this.extensions);
