@@ -1,6 +1,6 @@
 import vue from 'rollup-plugin-vue'; // Handle .vue SFC files
 import buble from 'rollup-plugin-buble'; // Transpile/polyfill with reasonable browser support
-import babel from 'rollup-plugin-babel';
+// import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
 import {terser} from 'rollup-plugin-terser';
 
