@@ -24,8 +24,7 @@ export default {
             required: true
         },
         urn:{
-            type: String,
-            required: true
+            type: String
         },
 
         extensions:{
@@ -68,7 +67,7 @@ export default {
             await this.viewerService.LaunchViewer(this.containerId, this.setAccessToken);
 
             // If a urn is supplied, load it to viewer;
-            if(this.urn != null && typeof this.urn === 'string'){
+            if(typeof this.urn === 'string' && this.urn.trim().length > 0){
                 this.viewerService.LoadDocument(this.urn);
             }
         }
