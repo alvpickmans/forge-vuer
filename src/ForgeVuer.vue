@@ -27,6 +27,11 @@ export default {
             type: String
         },
 
+        options: {
+            type: Object,
+            default: {},
+        },
+
         extensions:{
             type: Object
         }
@@ -64,7 +69,7 @@ export default {
                 this.viewerService.SetCustomExtensions(this.extensions);
             }
             // Creating a new instance of the ViewerService
-            await this.viewerService.LaunchViewer(this.containerId, this.setAccessToken);
+            await this.viewerService.LaunchViewer(this.containerId, this.setAccessToken, this.options);
 
             // If a urn is supplied, load it to viewer;
             if(typeof this.urn === 'string' && this.urn.trim().length > 0){

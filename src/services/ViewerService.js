@@ -90,6 +90,10 @@ const ViewerService = function (Autodesk, VueInstance) {
 
     this.ViewerContainer;
 
+    this.Initialized = false;
+
+    this.CurrentUrn;
+
     // If any event, try to add it to the Viewer instance
     let events = Object.keys(this.VueInstance.$listeners);
     this.SetEvents(events);
@@ -100,17 +104,18 @@ const ViewerService = function (Autodesk, VueInstance) {
  * @param {String} containerId Id of the DOM element to host the viewer
  * @param {Function} getTokenMethod Function to retrieve the token, which will execute a callback
  */
-ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMethod) {
+ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMethod, options) {
 
-    let options = {
-        env: 'AutodeskProduction',
+    let viewerOptions = Object.assign({}, options, {
         getAccessToken: getTokenMethod
-    };
+    });
+
 
     return new Promise((resolve, reject) => {
         try {
             this.ViewerContainer = document.getElementById(containerId);
-            this.AutodeskViewing.Initializer(options, () => {
+            this.AutodeskViewing.Initializer(viewerOptions, () => {
+                this.Initialize();
                 resolve(true);
             });
 
@@ -119,6 +124,12 @@ ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
             reject(error);
         }
     })
+}
+
+ViewerService.prototype.Initialize = function(){
+    this.Initialized = true;
+    if(typeof this.CurrentUrn === 'string' && this.CurrentUrn.trim().length > 0)
+        this.LoadDocument(this.CurrentUrn);
 }
 
 /**
@@ -177,16 +188,18 @@ ViewerService.prototype.SetEvents = function (events) {
  */
 ViewerService.prototype.LoadDocument = function (urn) {
 
-    if(this.Viewer3D == null){
-        EmitError(this.VueInstance, new Error('Forge Viewer has not been initialized yet!'));
+    this.CurrentUrn = urn;
+
+    if(this.Initialized !== true)
+        return;
+
+    if(typeof urn !== 'string' || urn.trim().length <= 0){
+        if(this.Viewer3D != null){
+            this.Viewer3D.uninitialize();
+            this.Viewer3D = null;
+        }
         return;
     }
-
-    // Tear down the viewer for the incoming document.
-    this.Viewer3D.tearDown();
-
-    if(typeof urn !== 'string' || urn.trim().length <= 0)
-        return;
 
     let documentId = GetEncodedURN(urn);
     try {
