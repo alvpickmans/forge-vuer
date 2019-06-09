@@ -26,7 +26,6 @@ const AddCustomExtensions = function (autodeskViewing, baseExtension, customExte
 
 }
 
-
 const VueToViewer3DEvent = function (eventName) {
     // Vuer component events should be the same as Viewer3D's,
     // but low cased and hypen insted of underscore
@@ -43,7 +42,7 @@ const CreateEmitterFunction = function (vue, name) {
 }
 
 const EmitError = function (vue, error) {
-    vue.$emit('onError', error);
+    vue.$emit('error', error);
 }
 
 const GetEncodedURN = function (urn) {
@@ -212,7 +211,7 @@ ViewerService.prototype.LoadDocument = function (urn) {
 
     let documentId = GetEncodedURN(urn);
     try {
-        this.VueInstance.$emit('onDocumentLoading');
+        this.VueInstance.$emit('documentLoading');
         this.AutodeskViewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), this.onDocumentLoadError.bind(this));
     } catch (error) {
         EmitError(this.VueInstance, error);
@@ -294,34 +293,33 @@ ViewerService.prototype.LoadModel = function(svfURL, modelOptions){
         this.RegisterEvents();
 
         // Emitting Viewer3D Started event
-        this.VueInstance.$emit('onViewerStarted', this.Viewer3D);
-        this.VueInstance.$emit('onModelLoading');
+        this.VueInstance.$emit('viewerStarted', this.Viewer3D);
     }
     else {
         this.Viewer3D.tearDown();
-        this.VueInstance.$emit('onModelLoading');
         this.Viewer3D.load(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
     }
-
+    
+    this.VueInstance.$emit('modelLoading');
     this.State.svf = svfURL;
     this.State.modelOptions = modelOptions;
 }
 
 ViewerService.prototype.onDocumentLoadError = function (errorCode) {
-    if (this.VueInstance.$listeners['onDocumentLoadError'])
-        this.VueInstance.$emit('onDocumentLoadError', errorCode);
+    if (this.VueInstance.$listeners['documentLoadError'])
+        this.VueInstance.$emit('documentLoadError', errorCode);
     else
         EmitError(this.VueInstance, new Error('Failed to load document. Error Code: ' + errorCode));
 }
 
 ViewerService.prototype.onModelLoaded = function (item) {
-    this.VueInstance.$emit('onModelLoaded', item);
+    this.VueInstance.$emit('modelLoaded', item);
 }
 
 ViewerService.prototype.onModelLoadError = function (errorCode) {
     
-    if (this.VueInstance.$listeners['onModelLoadError'])
-        this.VueInstance.$emit('onModelLoadError', errorCode);
+    if (this.VueInstance.$listeners['modelLoadError'])
+        this.VueInstance.$emit('modelLoadError', errorCode);
     else
         EmitError(this.VueInstance, new Error('Failed to load model. Error Code: ' + errorCode));
 }

@@ -206,13 +206,13 @@ Additionally, the component provides some additional events that allows to act w
 
 | Name | Arguments | Description |
 | --- | --- | --- |
-| `onError` | `Error` | This event is fired whenever any error that hasn't been handle in any other way (internally by Forge emitting their events or some other of these custom events). When fired, this event will have as input the actual error that has been thrown.|
-| `onDocumentLoading` | - | Event fired when a new `urn` has been provided and the process of loading its associated document starts. |
-| `onDocumentLoadError` | `Error` | Fired when Forge fails to load a document. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*|
-| `onViewerStarted` | `Viewer3D` instance | Event fired when the Viewer3D has been initialized, passing this instance as function argument. |
-| `onModelLoading` | - | Fired when the model associated with the document starts to load. |
-| `onModelLoaded` | `model` | Fired when the model is successfully loaded. The argument is a [Model](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Model/) instance.|
-| `onModelLoadError` | `Error` | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*| 
+| `error` | `Error` | This event is fired whenever any error that hasn't been handle in any other way (internally by Forge emitting their events or some other of these custom events). When fired, this event will have as input the actual error that has been thrown.|
+| `documentLoading` | - | Event fired when a new `urn` has been provided and the process of loading its associated document starts. |
+| `documentLoadError` | `Error` | Fired when Forge fails to load a document. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*|
+| `viewerStarted` | `Viewer3D` instance | Event fired when the Viewer3D has been initialized, passing this instance as function argument. |
+| `modelLoading` | - | Fired when the model associated with the document starts to load. |
+| `modelLoaded` | `model` | Fired when the model is successfully loaded. The argument is a [Model](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Model/) instance.|
+| `modelLoadError` | `Error` | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*| 
 
 
 
