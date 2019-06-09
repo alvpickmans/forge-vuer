@@ -101,3 +101,69 @@ app.use("/api/token", async (req, res, next) => {
             });
 });
 ```
+
+## Events
+The component exposes two types of events to which can be subscribed: original Forge Viewer Events and Custom Events.
+
+### Original Forge Viewer Events
+
+As described on Forge Viewer [API documentation](https://autodeskviewer.com/viewers/latest/docs/Autodesk.Viewing.html#events), the viewer provides several events like `SELECTION_CHANGED`, `PROGRESS_UPDATED`, etc. The component allows to seamlessly subscribe to these event using the familiar vue syntax `v-on:` or `@` by the convention:
+- Same name of original event but all lower cased.
+- Underscores `_` replaced by hyphens/dashes `-`.
+- Ended by `-event`.
+
+| Original Event | Subscribed on component |
+| --- | --- |
+| `SELECTION_CHANGED` | `@selection-change-event` |
+| `PROGRESS_UPDATED` | `@progress-updated-event` |
+
+Internally, on creation it will try to map the component's events to the corresponding on the Viewer, providing an easy interface to subscribe to any original event.
+Any data associated that an event might return is encapsulated on a single object to allow for an automated mapping. This means that your subscribing function will have a single input object containing all parameters passed by the event.
+
+```html
+<!-- SPA -->
+<template>
+    [...]
+
+    <forge-vuer
+      [...]
+
+      @progress-updated-event="handleProgressUpdated"
+    >
+    [...]
+</template>
+
+<script>
+
+export default{
+    [...]
+
+    methods: {
+        handleProgressUpdated: function(e){
+            console.log(`Progress: ${e.percentage}%`)
+        }
+    }
+
+    [...]
+}
+
+</script>
+```
+
+
+### ForgeVuer Events
+Additionally, the component provides some additional events that allows to act when certain actions happen during the execution of the component.
+
+| Name | Arguments | Description |
+| --- | --- | --- |
+| `onError` | `Error` | This event is fired whenever any error that hasn't been handle in any other way (internally by Forge emitting their events or some other of these custom events). When fired, this event will have as input the actual error that has been thrown.|
+| `onDocumentLoading` | - | Event fired when a new `urn` has been provided and the process of loading its associated document starts. |
+| `onDocumentLoadError` | `Error` | Fired when Forge fails to load a document. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*|
+| `onViewerStarted` | `Viewer3D` instance | Event fired when the Viewer3D has been initialized, passing this instance as function argument. |
+| `onModelLoading` | - | Fired when the model associated with the document starts to load. |
+| `onModelLoaded` | `model` | Fired when the model is successfully loaded. The argument is a [Model](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Model/) instance.|
+| `onModelLoadError` | `Error` | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*| 
+
+
+
+> *For a detailed list of Forge ErrorCodes and their meaning, visit [this blog post](https://forge.autodesk.com/cloud_and_mobile/2016/01/error-codes-in-view-and-data-api.html)
