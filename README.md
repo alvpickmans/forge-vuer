@@ -159,13 +159,13 @@ The component exposes two types of events to which can be subscribed: original F
 
 As described on Forge Viewer [API documentation](https://autodeskviewer.com/viewers/latest/docs/Autodesk.Viewing.html#events), the viewer provides several events like `SELECTION_CHANGED`, `PROGRESS_UPDATED`, etc. The component allows to seamlessly subscribe to these event using the familiar vue syntax `v-on:` or `@` by the convention:
 - Same name of original event but all lower cased.
-- Underscores `_` replaced by hyphens/dashes `-`.
+- Underscores `_` replaced by hyphens/dashes `-`
 - Ended by `-event`.
 
 | Original Event | Subscribed on component |
 | --- | --- |
-| `SELECTION_CHANGED` | `@selection-change-event` |
-| `PROGRESS_UPDATED` | `@progress-updated-event` |
+| `SELECTION_CHANGED_EVENT` | `@selection-change-event` |
+| `PROGRESS_UPDATE_EVENT` | `@progress-update-event` |
 
 Internally, on creation it will try to map the component's events to the corresponding on the Viewer, providing an easy interface to subscribe to any original event.
 Any data associated that an event might return is encapsulated on a single object to allow for an automated mapping. This means that your subscribing function will have a single input object containing all parameters passed by the event.
@@ -178,7 +178,7 @@ Any data associated that an event might return is encapsulated on a single objec
     <forge-vuer
       [...]
 
-      @progress-updated-event="handleProgressUpdated"
+      @progress-update-event="handleProgressUpdated"
     />
     [...]
 </template>
