@@ -26,10 +26,10 @@ const AddCustomExtensions = function (autodeskViewing, baseExtension, customExte
 
 }
 
+
 const VueToViewer3DEvent = function (eventName) {
     // Vuer component events should be the same as Viewer3D's,
     // but low cased and hypen insted of underscore
-
     return eventName.toUpperCase().replace(/-/g, '_');
 }
 
@@ -75,12 +75,12 @@ const ViewerService = function (Autodesk, VueInstance) {
     // Autodesk.Vieweing.Extensions function
     this.Extension = Autodesk.Viewing.Extension;
 
-    // Events is an object storing the vue name of the event
-    // and the function applied to Viewer3D, so it can be removed later on.
-    this.Events;
-
     // Vue instance, store to be able to emit events
     this.VueInstance = VueInstance;
+
+    // Events is an object storing the vue name of the event
+    // and the function applied to Viewer3D, so it can be removed later on.
+    this.Events = {};
 
     // Viewer3D instance
     this.Viewer3D = null;
@@ -128,6 +128,7 @@ ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
 
 ViewerService.prototype.Initialize = function(){
     this.Initialized = true;
+
     if(typeof this.CurrentUrn === 'string' && this.CurrentUrn.trim().length > 0)
         this.LoadDocument(this.CurrentUrn);
 }
@@ -174,7 +175,9 @@ ViewerService.prototype.GetViewer3DConfig = function () {
  */
 ViewerService.prototype.SetEvents = function (events) {
 
-    this.Events = events.filter(name => name.endsWith('-event')).reduce((acc, name) => {
+    this.Events = events
+    .filter(name => name.endsWith('-event'))
+    .reduce((acc, name) => {
         acc[name] = null;
         return acc;
     }, {});
@@ -260,6 +263,7 @@ ViewerService.prototype.onDocumentLoadSuccess = function (doc) {
 
         // Emitting Viewer3D Started event
         this.VueInstance.$emit('onViewerStarted', this.Viewer3D);
+        this.VueInstance.$emit('onModelLoading');
     }
     else {
         this.Viewer3D.tearDown();
