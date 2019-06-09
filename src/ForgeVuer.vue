@@ -46,10 +46,6 @@ export default {
     data() {
         return {
             viewerService: null,
-            token: null,
-            timeout: 3600000,
-            expires: null,
-            events: [],
         }
     },
     mounted: async function(){
@@ -59,46 +55,20 @@ export default {
             throw new Error("Forge Viewer js missing. Make sure you add it on the HTML header");
         }
         else if(typeof this.setAccessToken !== 'function'){
-            throw new Error(`The 'setToken' prop needs to be a function 
-                implementing a callback passing in the generated token and expire timeout in seconds.`)
+            throw new Error(`The 'setToken' prop needs to be a function implementing a callback passing in the generated token and expire timeout in seconds.`)
         }
         else{
             this.viewerService = new ViewerService(window.Autodesk, this);
 
-            if(this.extensions && Object.keys(this.extensions).length > 0){
+            if(this.extensions && Object.keys(this.extensions).length > 0)
                 this.viewerService.SetCustomExtensions(this.extensions);
-            }
+
             // Creating a new instance of the ViewerService
             await this.viewerService.LaunchViewer(this.containerId, this.setAccessToken, this.options);
 
             // If a urn is supplied, load it to viewer;
-            if(typeof this.urn === 'string' && this.urn.trim().length > 0){
+            if(typeof this.urn === 'string' && this.urn.trim().length > 0)
                 this.viewerService.LoadDocument(this.urn);
-            }
-        }
-               
-
-
-
-    },
-    methods: {
-        /**
-         * Setting the component to refresh the user input token logic
-         * after the timeout 
-         */
-        _setRefreshInterval: function(){
-           setInterval(() => {
-               this.setToken(this._setToken);
-           }, this.timeout);
-        },
-
-        /**
-         * Callback function to be call from setToken prop
-         */
-        _setToken: function(token, timeout = 3600 ){
-            this.token = token;
-            this.timeout = timeout;
-            this.expires = Date.now() + timeout;
         }
     }
 }
