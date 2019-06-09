@@ -35,9 +35,9 @@ A minimal working setup on a SPA application:
 <template>
   <div id="app">
     <forge-vuer
-      :setAccessToken="myGetTokenMethodAsync"
+      :getAccessToken="myGetTokenMethodAsync"
       :urn="myObjectUrn"
-    >
+    />
   </div>
 </template>
 
@@ -101,6 +101,56 @@ app.use("/api/token", async (req, res, next) => {
             });
 });
 ```
+```html
+<!-- SPA -->
+<template>
+    [...]
+
+    <forge-vuer
+      [...]
+
+      @getAccessToken="handleAccessToken"
+    />
+    [...]
+</template>
+
+<script>
+
+export default{
+    [...]
+
+    methods: {
+        handleAccessToken: async function(onSuccess){
+            axios.get(`/api/token`)
+            .then(response => {
+                onSuccess(response.data.access_token, response.data.expires_in);
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        }
+    }
+
+    [...]
+}
+
+</script>
+```
+
+
+## Props
+The component has some vue prop to configure and customize it.
+
+| Prop | Type | Default | Required |Description |
+| --- | --- | --- | --- | --- |
+| `id` |`String` | `forge-vuer` | `false` |This defines the DOM `id` attribute of the element that will host the Viewer |
+| `getAccessToken` | `Function` | - | `true` | Function that will provide a valid access token to the Viewer by calling the `onSuccess` callback. |
+| `urn` | `String` | - | `false` | Urn of the file to load. Make sure the file has already been [translated](https://forge.autodesk.com/en/docs/model-derivative/v2/tutorials/prepare-file-for-viewer/). | 
+| `options` | `Object` | - | `false` | Options use to [initialize](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Initializer/#new-initializer-options-callback) the Viewer instance. The only property that will not be used is `getAccessToken`, as it is replace by the corresponding function passed as a component's property. |
+| `headless` | `Boolean` | `false` | `false` | This property defines if the viewer is meant to be use in [headless](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/headless/) mode. |
+| `extensions` | `Object` | - | `false` | Object containing the custom extensions. See [custom extensions](#custom-extensions) for more detail.
+
+
 
 ## Events
 The component exposes two types of events to which can be subscribed: original Forge Viewer Events and Custom Events.
@@ -129,7 +179,7 @@ Any data associated that an event might return is encapsulated on a single objec
       [...]
 
       @progress-updated-event="handleProgressUpdated"
-    >
+    />
     [...]
 </template>
 
@@ -167,3 +217,5 @@ Additionally, the component provides some additional events that allows to act w
 
 
 > *For a detailed list of Forge ErrorCodes and their meaning, visit [this blog post](https://forge.autodesk.com/cloud_and_mobile/2016/01/error-codes-in-view-and-data-api.html)
+
+## Custom Extensions
