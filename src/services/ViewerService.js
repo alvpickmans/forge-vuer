@@ -61,6 +61,16 @@ const GetEncodedURN = function (urn) {
     return encoded;
 }
 
+const CustomEventNames = [
+    'error',
+    `documentLoading`,
+    `documentLoadError`,
+    `viewerStarted`,
+    `modelLoading`,
+    `modelLoaded`,
+    `modelLoadError`,
+];
+
 /**
  * Creates a new ViewerService object to handle viewer interaction
  * @param {Object} Autodesk Forge Viewer Autodesk SDK
@@ -110,7 +120,7 @@ const ViewerService = function (Autodesk, VueInstance) {
  */
 ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMethod, options, headless) {
 
-    let viewerOptions = Object.assign({}, options | {}, {
+    let viewerOptions = Object.assign({}, options, {
         getAccessToken: getTokenMethod
     });
 
@@ -181,7 +191,7 @@ ViewerService.prototype.GetViewer3DConfig = function () {
 ViewerService.prototype.SetEvents = function (events) {
 
     this.Events = events
-    .filter(name => name.endsWith('-event'))
+    .filter(name => CustomEventNames.indexOf(name) == -1)
     .reduce((acc, name) => {
         acc[name] = null;
         return acc;
@@ -226,23 +236,21 @@ ViewerService.prototype.LoadDocument = function (urn) {
 ViewerService.prototype.RegisterEvents = function () {
 
     let eventNames = Object.keys(this.Events);
-    if (eventNames.length > 0) {
+    if (eventNames.length <= 0)
+        return;
 
-        for (let i = 0; i < eventNames.length; i++) {
-            const vueEventname = eventNames[i];
-            const viewerEventName = VueToViewer3DEvent(vueEventname);
-            const eventType = this.AutodeskViewing[viewerEventName];
+    for (let i = 0; i < eventNames.length; i++) {
+        const vueEventName = eventNames[i];
+        const viewerEventName = VueToViewer3DEvent(vueEventName);
+        const eventType = this.AutodeskViewing[viewerEventName];
 
-            if (eventType != null) {
-                let emitterFunction = CreateEmitterFunction(this.VueInstance, vueEventname);
-                this.Events[vueEventname] = emitterFunction;
+        if (eventType == null) 
+            throw new Error(`Event '${vueEventName}' doesn't exist on Forge Viewer`);
+        
+        let emitterFunction = CreateEmitterFunction(this.VueInstance, vueEventName);
+        this.Events[vueEventName] = emitterFunction;
 
-                this.Viewer3D.addEventListener(eventType, emitterFunction);
-            } else {
-                console.log(`Event '${vueEventname}' doesn't exist on Forge Viewer`);
-            }
-        }
-
+        this.Viewer3D.addEventListener(eventType, emitterFunction);
     }
 }
 
