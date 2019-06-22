@@ -1,10 +1,9 @@
 /**
  *
- * @param {Object} autodeskViewing Autodesk's Viewing
- * @param {Function} baseExtension Autodesk.Viewing.Extension
+ * @param {Object} autodeskViewing Autodesk.Viewing
  * @param {Object} customExtensions Custom extensions
  */
-const RegisterCustomExtensions = function (autodeskViewing, baseExtension, customExtensions) {
+const RegisterCustomExtensions = function (AutodeskViewing, customExtensions) {
 
     let extensionNames = Object.keys(customExtensions);
 
@@ -14,16 +13,16 @@ const RegisterCustomExtensions = function (autodeskViewing, baseExtension, custo
         let name = extensionNames[i];
 
         // If extension already registered
-        if(autodeskViewing.theExtensionManager.getExtension(name) != null){
+        if(AutodeskViewing.theExtensionManager.getExtension(name) != null){
             registeredExtensions.push(name);
             continue;
         }
 
         let ExtensionCtor = customExtensions[name];
 
-        let extended = new ExtensionCtor(baseExtension, autodeskViewing);
+        let extended = new ExtensionCtor(AutodeskViewing);
         
-        let result = autodeskViewing.theExtensionManager.registerExtension(name, extended);
+        let result = AutodeskViewing.theExtensionManager.registerExtension(name, extended);
         if (result === true)
             registeredExtensions.push(name);
 
@@ -87,9 +86,6 @@ const ViewerService = function (Autodesk, VueInstance) {
 
     // Autodesk Viewing object
     this.AutodeskViewing = Autodesk.Viewing;
-
-    // Autodesk.Vieweing.Extensions function
-    this.Extension = Autodesk.Viewing.Extension;
 
     // Vue instance, store to be able to emit events
     this.VueInstance = VueInstance;
@@ -183,7 +179,7 @@ ViewerService.prototype.GetViewer3DConfig = function () {
     let config3d = {};
 
     if (this.HasCustomExtensions())
-        config3d['extensions'] = RegisterCustomExtensions(this.AutodeskViewing, this.Extension, this.CustomExtensions);
+        config3d['extensions'] = RegisterCustomExtensions(this.AutodeskViewing, this.CustomExtensions);
 
     return config3d;
 }
