@@ -4,25 +4,32 @@
  * @param {Function} baseExtension Autodesk.Viewing.Extension
  * @param {Object} customExtensions Custom extensions
  */
-const AddCustomExtensions = function (autodeskViewing, baseExtension, customExtensions) {
+const RegisterCustomExtensions = function (autodeskViewing, baseExtension, customExtensions) {
 
     let extensionNames = Object.keys(customExtensions);
 
-    let registeredEvents = [];
+    let registeredExtensions = [];
 
     for (let i = 0; i < extensionNames.length; i++) {
         let name = extensionNames[i];
+
+        // If extension already registered
+        if(autodeskViewing.theExtensionManager.getExtension(name) != null){
+            registeredExtensions.push(name);
+            continue;
+        }
+
         let ExtensionCtor = customExtensions[name];
 
         let extended = new ExtensionCtor(baseExtension, autodeskViewing);
-
+        
         let result = autodeskViewing.theExtensionManager.registerExtension(name, extended);
-        if (result === true) {
-            registeredEvents.push(name);
-        }
+        if (result === true)
+            registeredExtensions.push(name);
+
     }
 
-    return registeredEvents;
+    return registeredExtensions;
 
 }
 
@@ -175,10 +182,8 @@ ViewerService.prototype.HasCustomExtensions = function () {
 ViewerService.prototype.GetViewer3DConfig = function () {
     let config3d = {};
 
-    if (this.HasCustomExtensions()) {
-        let registered = AddCustomExtensions(this.AutodeskViewing, this.Extension, this.CustomExtensions);
-        config3d['extensions'] = registered;
-    }
+    if (this.HasCustomExtensions())
+        config3d['extensions'] = RegisterCustomExtensions(this.AutodeskViewing, this.Extension, this.CustomExtensions);
 
     return config3d;
 }
@@ -285,10 +290,12 @@ ViewerService.prototype.onDocumentLoadSuccess = function (doc) {
 }
 
 ViewerService.prototype.GetViewerInstance = function(container, configuration, headless){
+    let config = this.GetViewer3DConfig();
+    console.log(config)
     if(headless === true)
-        return new this.AutodeskViewing.Viewer3D(this.ViewerContainer, this.GetViewer3DConfig());
+        return new this.AutodeskViewing.Viewer3D(this.ViewerContainer, config);
     
-    return new this.AutodeskViewing.Private.GuiViewer3D(this.ViewerContainer, this.GetViewer3DConfig());
+    return new this.AutodeskViewing.Private.GuiViewer3D(this.ViewerContainer, config);
 }
 
 ViewerService.prototype.LoadModel = function(svfURL, modelOptions){
@@ -305,6 +312,7 @@ ViewerService.prototype.LoadModel = function(svfURL, modelOptions){
     }
     else {
         this.Viewer3D.tearDown();
+        this.Viewer3D.setUp();
         this.Viewer3D.load(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
     }
     
