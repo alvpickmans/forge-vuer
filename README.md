@@ -155,13 +155,14 @@ The component has some vue prop to configure and customize it.
 ## Events
 The component exposes two types of events to which can be subscribed: original Forge Viewer Events and Custom Events.
 
-### Original Forge Viewer Events
+### Forge Viewer Events
 
-As described on Forge Viewer [API documentation](https://autodeskviewer.com/viewers/latest/docs/Autodesk.Viewing.html#events), the viewer provides several events like `SELECTION_CHANGED`, `PROGRESS_UPDATED`, etc. The component allows to seamlessly subscribe to these event using the familiar vue syntax `v-on:` or `@` by the convention:
+As described on Forge Viewer [API documentation](https://autodeskviewer.com/viewers/latest/docs/Autodesk.Viewing.html#events), the viewer provides several events like `SELECTION_CHANGED_EVENT`, `PROGRESS_UPDATE_EVENT`, etc. The component allows to seamlessly subscribe to these event using the familiar vue syntax `v-on:` or `@` by the convention:
 - Same name of original event but all lower cased.
 - Underscores `_` replaced by hyphens/dashes `-`
 - Ended by `-event`.
 
+As an example:
 | Original Event | Subscribed on component |
 | --- | --- |
 | `SELECTION_CHANGED_EVENT` | `@selection-change-event` |
@@ -189,8 +190,8 @@ export default{
     [...]
 
     methods: {
-        handleProgressUpdated: function(e){
-            console.log(`Progress: ${e.percentage}%`)
+        handleProgressUpdated: function(eventData){
+            console.log(`Progress: ${eventData.percentage}%`)
         }
     }
 
@@ -214,8 +215,8 @@ Additionally, the component provides some additional events that allows to act w
 | `modelLoaded` | `model` | Fired when the model is successfully loaded. The argument is a [Model](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Model/) instance.|
 | `modelLoadError` | `Error` | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*| 
 
-
-
 > *For a detailed list of Forge ErrorCodes and their meaning, visit [this blog post](https://forge.autodesk.com/cloud_and_mobile/2016/01/error-codes-in-view-and-data-api.html)
 
 ## Custom Extensions
+
+One of the most powerful features of Autodesk Forge Viewer is the ability to add custom functionality via **Extensions**.
