@@ -1,6 +1,20 @@
-# ForgeVuer
+# ForgeVuer <!-- omit in toc -->
 
 A Vue.js component providing an easy to setup, almost *"plug and play"* experience for Autodesk's Forge Viewer on Vue.js
+
+- [Getting Started](#Getting-Started)
+  - [Prerequisites](#Prerequisites)
+  - [Installing](#Installing)
+- [TL;DR](#TLDR)
+- [Setup](#Setup)
+  - [Access Token](#Access-Token)
+- [Properties](#Properties)
+- [Events](#Events)
+  - [Forge Viewer Events](#Forge-Viewer-Events)
+  - [ForgeVuer Events](#ForgeVuer-Events)
+- [Custom Extensions](#Custom-Extensions)
+- [Versioning](#Versioning)
+- [License](#License)
 
 ## Getting Started
 
@@ -140,7 +154,7 @@ The component has some properties to configure and customize it.
 
 | Prop | Type | Default | Required |Description |
 | --- | --- | --- | --- | --- |
-| `id` |`String` | `forge-vuer` | `false` |This defines the DOM `id` attribute of the DOM element that will host the Viewer |
+| `id` |`String` | `forge-vuer` | `false` |This defines the `id` attribute of the DOM element that will host the Viewer |
 | `getAccessToken` | `Function` | - | `true` | Function that will provide a valid access token to the Viewer by calling the `onSuccess` callback. |
 | `urn` | `String` | - | `false` | Urn of the file to load. Make sure the file has already been [translated](https://forge.autodesk.com/en/docs/model-derivative/v2/tutorials/prepare-file-for-viewer/). | 
 | `options` | `Object` | - | `false` | Options used to [initialize](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Initializer/#new-initializer-options-callback) the Viewer instance. The only property that will not be used is `getAccessToken`, as it is replace by the corresponding function passed as a component's property. |
@@ -159,6 +173,7 @@ As described on Forge Viewer [API documentation](https://autodeskviewer.com/view
 - Underscores `_` replaced by hyphens/dashes `-`.
 
 As an example:
+
 | Original Event | Subscribed on component |
 | --- | --- |
 | `SELECTION_CHANGED_EVENT` | `@selection-change-event` |
@@ -203,17 +218,17 @@ Additionally, the component provides some additional events that allows to act w
 | --- | --- | --- |
 | `error` | `Error` | This event is fired whenever any error that hasn't been handle in any other way (internally by Forge emitting their events or some other of these custom events). When fired, this event will have as input the actual error that has been thrown.|
 | `documentLoading` | - | Event fired when a new `urn` has been provided and the process of loading its associated document starts. |
-| `documentLoadError` | `Error` | Fired when Forge fails to load a document. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*|
+| `documentLoadError` | `Error` | Fired when Forge fails to load a document. If no function is subscribed to this event, the default `Error` event will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*|
 | `viewerStarted` | `Viewer3D` instance | Event fired when the Viewer3D has been initialized, passing this instance as function argument. |
 | `modelLoading` | - | Fired when the model associated with the document starts to load. |
 | `modelLoaded` | `model` | Fired when the model is successfully loaded. The argument is a [Model](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Model/) instance.|
-| `modelLoadError` | `Error` | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `onError` will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*| 
+| `modelLoadError` | `Error` | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `Error` event will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*| 
 
 > *For a detailed list of Forge ErrorCodes and their meaning, visit [this blog post](https://forge.autodesk.com/cloud_and_mobile/2016/01/error-codes-in-view-and-data-api.html)
 
 ## Custom Extensions
 
-One of the most powerful features of Autodesk Forge Viewer is the ability to add custom functionality via **Extensions**. Registering custom extensions to the component's Viewer instance can be done just through the `extensions` component property. The only difference with the common [examples](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/extensions/) found only is that the extension implementation must be wrapped within a function so the component can instantiate them at runtime.
+One of the most powerful features of Autodesk Forge Viewer is the ability to add custom functionality via **Extensions**. Registering custom extensions to the component's Viewer instance can be done just through the `extensions` component property. The online difference with the common [examples](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/extensions/) found only is that the extension implementation must be wrapped within a function so the component can register them at runtime.
 
 This would be a simple example of custom extension:
 ```js
