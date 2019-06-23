@@ -1,71 +1,4 @@
-/**
- *
- * @param {Object} autodeskViewing Autodesk.Viewing
- * @param {Object} customExtensions Custom extensions
- */
-const RegisterCustomExtensions = function (AutodeskViewing, customExtensions) {
-
-    let extensionNames = Object.keys(customExtensions);
-
-    let registeredExtensions = [];
-
-    for (let i = 0; i < extensionNames.length; i++) {
-        let name = extensionNames[i];
-
-        // If extension already registered
-        if(AutodeskViewing.theExtensionManager.getExtension(name) != null){
-            registeredExtensions.push(name);
-            continue;
-        }
-
-        let ExtensionCtor = customExtensions[name];
-
-        let extended = new ExtensionCtor(AutodeskViewing);
-        
-        let result = AutodeskViewing.theExtensionManager.registerExtension(name, extended);
-        if (result === true)
-            registeredExtensions.push(name);
-
-    }
-
-    return registeredExtensions;
-
-}
-
-const VueToViewer3DEvent = function (eventName) {
-    // Vuer component events should be the same as Viewer3D's,
-    // but low cased and hypen insted of underscore
-    return eventName.toUpperCase().replace(/-/g, '_');
-}
-
-const CreateEmitterFunction = function (vue, name) {
-    return (...prop) => {
-        let p = Object.assign({}, ...prop);
-        delete p.target;
-        delete p.type;
-        vue.$emit(name, p);
-    };
-}
-
-const EmitError = function (vue, error) {
-    vue.$emit('error', error);
-}
-
-const GetEncodedURN = function (urn) {
-    let encoded;
-
-    if (urn.indexOf('adsk') != -1) {
-        encoded = `urn:${btoa(urn)}`;
-    }
-    else if (urn.indexOf('urn') == -1) {
-        encoded = `urn:${urn}`;
-    }
-    else {
-        encoded = urn;
-    }
-
-    return encoded;
-}
+import { Utils } from "./Utils";
 
 const CustomEventNames = [
     'error',
@@ -138,7 +71,7 @@ ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
             });
 
         } catch (error) {
-            EmitError(this.VueInstance, error);
+            Utils.EmitError(this.VueInstance, error);
             reject(error);
         }
     })
@@ -179,7 +112,7 @@ ViewerService.prototype.GetViewer3DConfig = function () {
     let config3d = {};
 
     if (this.HasCustomExtensions())
-        config3d['extensions'] = RegisterCustomExtensions(this.AutodeskViewing, this.CustomExtensions);
+        config3d['extensions'] = Utils.RegisterCustomExtensions(this.AutodeskViewing, this.CustomExtensions);
 
     return config3d;
 }
@@ -220,12 +153,12 @@ ViewerService.prototype.LoadDocument = function (urn) {
         return;
     }
 
-    let documentId = GetEncodedURN(urn);
+    let documentId = Utils.GetEncodedURN(urn);
     try {
         this.VueInstance.$emit('documentLoading');
         this.AutodeskViewing.Document.load(documentId, this.onDocumentLoadSuccess.bind(this), this.onDocumentLoadError.bind(this));
     } catch (error) {
-        EmitError(this.VueInstance, error);
+        Utils.EmitError(this.VueInstance, error);
     }
 
 }
@@ -242,13 +175,13 @@ ViewerService.prototype.RegisterEvents = function () {
 
     for (let i = 0; i < eventNames.length; i++) {
         const vueEventName = eventNames[i];
-        const viewerEventName = VueToViewer3DEvent(vueEventName);
+        const viewerEventName = Utils.VueToViewer3DEvent(vueEventName);
         const eventType = this.AutodeskViewing[viewerEventName];
 
         if (eventType == null) 
             throw new Error(`Event '${vueEventName}' doesn't exist on Forge Viewer`);
         
-        let emitterFunction = CreateEmitterFunction(this.VueInstance, vueEventName);
+        let emitterFunction = Utils.CreateEmitterFunction(this.VueInstance, vueEventName);
         this.Events[vueEventName] = emitterFunction;
 
         this.Viewer3D.addEventListener(eventType, emitterFunction);
@@ -272,7 +205,7 @@ ViewerService.prototype.onDocumentLoadSuccess = function (doc) {
 
     let geometries = doc.getRoot().search({ 'type': 'geometry' });
     if (geometries.length === 0) {
-        EmitError(this.VueInstance, new Error('Document contains no geometries.'))
+        Utils.EmitError(this.VueInstance, new Error('Document contains no geometries.'))
         return;
     }
 
@@ -321,7 +254,7 @@ ViewerService.prototype.onDocumentLoadError = function (errorCode) {
     if (this.VueInstance.$listeners['documentLoadError'])
         this.VueInstance.$emit('documentLoadError', errorCode);
     else
-        EmitError(this.VueInstance, new Error('Failed to load document. Error Code: ' + errorCode));
+        Utils.EmitError(this.VueInstance, new Error('Failed to load document. Error Code: ' + errorCode));
 }
 
 ViewerService.prototype.onModelLoaded = function (item) {
@@ -333,7 +266,7 @@ ViewerService.prototype.onModelLoadError = function (errorCode) {
     if (this.VueInstance.$listeners['modelLoadError'])
         this.VueInstance.$emit('modelLoadError', errorCode);
     else
-        EmitError(this.VueInstance, new Error('Failed to load model. Error Code: ' + errorCode));
+        Utils.EmitError(this.VueInstance, new Error('Failed to load model. Error Code: ' + errorCode));
 }
 
 export { ViewerService };
