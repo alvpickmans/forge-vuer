@@ -228,7 +228,7 @@ Additionally, the component provides some additional events that allows to act w
 
 ## Custom Extensions
 
-One of the most powerful features of Autodesk Forge Viewer is the ability to add custom functionality via **Extensions**. Registering custom extensions to the component's Viewer instance can be done just through the `extensions` component property. The online difference with the common [examples](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/extensions/) found only is that the extension implementation must be wrapped within a function so the component can register them at runtime.
+One of the most powerful features of Autodesk Forge Viewer is the ability to add custom functionality via **Extensions**. Registering custom extensions to the component's Viewer instance can be done just through the `extensions` component property. The only difference with the common [examples](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/extensions/) found only is that the extension implementation must be wrapped within a function so the component can register them at runtime.
 
 This would be a simple example of custom extension:
 ```js
