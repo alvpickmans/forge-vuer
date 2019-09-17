@@ -1,6 +1,6 @@
 {
     "name": "forge-vuer",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Vue Component for Autodesk Forge Viewer",
     "main": "dist/ForgeVuer.umd.js",
     "module": "dist/ForgeVuer.esm.js",
