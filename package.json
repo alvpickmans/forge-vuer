@@ -13,7 +13,7 @@
         "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/ForgeVuer.umd.js",
         "build:es": "rollup --config build/rollup.config.js --format es --file dist/ForgeVuer.esm.js",
         "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/ForgeVuer.min.js",
-        "version": "npm run build && git add -A dist",
+        "version": "npm run build && git add -A .",
         "postversion": "git push && git push --tags"
     },
     "author": "Alvaro Ortega Pickmans",
