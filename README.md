@@ -38,7 +38,7 @@ These instructions will get you started on how to install, use and customize the
 
 ### Installing
 ```
-npm install @alvpickmans/forge-vuer
+npm install forge-vuer
 ```
 
 ## TL;DR
