@@ -1,3 +1,4 @@
+![ForgeVuer](assets/images/forgeVuerLogo.png)
 # ForgeVuer <!-- omit in toc -->
 
 A Vue.js component providing an easy to setup, almost *"plug and play"* experience for Autodesk's Forge Viewer on Vue.js
