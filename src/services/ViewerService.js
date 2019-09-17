@@ -77,10 +77,10 @@ ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
     })
 }
 
-ViewerService.prototype.Initialize = function(){
+ViewerService.prototype.Initialize = function () {
     this.State.initialized = true;
 
-    if(typeof this.State.urn === 'string' && this.State.urn.trim().length > 0)
+    if (typeof this.State.urn === 'string' && this.State.urn.trim().length > 0)
         this.LoadDocument(this.State.urn);
 }
 
@@ -125,11 +125,11 @@ ViewerService.prototype.GetViewer3DConfig = function () {
 ViewerService.prototype.SetEvents = function (events) {
 
     this.Events = events
-    .filter(name => CustomEventNames.indexOf(name) == -1)
-    .reduce((acc, name) => {
-        acc[name] = null;
-        return acc;
-    }, {});
+        .filter(name => CustomEventNames.indexOf(name) == -1)
+        .reduce((acc, name) => {
+            acc[name] = null;
+            return acc;
+        }, {});
 
 }
 
@@ -142,11 +142,11 @@ ViewerService.prototype.LoadDocument = function (urn) {
 
     this.State.urn = urn;
 
-    if(this.State.initialized !== true)
+    if (this.State.initialized !== true)
         return;
 
-    if(typeof urn !== 'string' || urn.trim().length <= 0){
-        if(this.Viewer3D != null){
+    if (typeof urn !== 'string' || urn.trim().length <= 0) {
+        if (this.Viewer3D != null) {
             this.Viewer3D.uninitialize();
             this.Viewer3D = null;
         }
@@ -178,9 +178,9 @@ ViewerService.prototype.RegisterEvents = function () {
         const viewerEventName = Utils.VueToViewer3DEvent(vueEventName);
         const eventType = this.AutodeskViewing[viewerEventName];
 
-        if (eventType == null) 
+        if (eventType == null)
             throw new Error(`Event '${vueEventName}' doesn't exist on Forge Viewer`);
-        
+
         let emitterFunction = Utils.CreateEmitterFunction(this.VueInstance, vueEventName);
         this.Events[vueEventName] = emitterFunction;
 
@@ -188,15 +188,15 @@ ViewerService.prototype.RegisterEvents = function () {
     }
 }
 
-ViewerService.prototype.SetHeadless = function(headless){
+ViewerService.prototype.SetHeadless = function (headless) {
     let currentHeadless = this.State.headless;
     this.State.headless = headless;
 
-    if(currentHeadless !== headless && this.Viewer3D != null){
+    if (currentHeadless !== headless && this.Viewer3D != null) {
         this.Viewer3D.uninitialize();
         this.Viewer3D = null;
 
-        if(this.State.svf)
+        if (this.State.svf)
             this.LoadModel(this.State.svf, this.State.modelOptions);
     }
 };
@@ -212,27 +212,27 @@ ViewerService.prototype.onDocumentLoadSuccess = function (doc) {
     // Load the chosen geometry
     let svf = doc.getViewablePath(geometries[0]);;
     let modelOptions = {
-        sharedPropertyDbPath: doc.getPropertyDbPath()
+        sharedPropertyDbPath: doc.getFullPath(doc.getRoot().findPropertyDbPath())
     };
 
     this.LoadModel(svf, modelOptions);
 }
 
-ViewerService.prototype.GetViewerInstance = function(container, configuration, headless){
+ViewerService.prototype.GetViewerInstance = function (container, configuration, headless) {
     let config = this.GetViewer3DConfig();
     console.log(config)
-    if(headless === true)
+    if (headless === true)
         return new this.AutodeskViewing.Viewer3D(this.ViewerContainer, config);
-    
-    return new this.AutodeskViewing.Private.GuiViewer3D(this.ViewerContainer, config);
+
+    return new this.AutodeskViewing.GuiViewer3D(this.ViewerContainer, config);
 }
 
-ViewerService.prototype.LoadModel = function(svfURL, modelOptions){
+ViewerService.prototype.LoadModel = async function (svfURL, modelOptions) {
 
     // If Viewer3D is null, it needs to be created and started.
     if (this.Viewer3D == null) {
         this.Viewer3D = this.GetViewerInstance(this.ViewerContainer, this.GetViewer3DConfig(), this.State.headless);
-            
+
         this.Viewer3D.start(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
         this.RegisterEvents();
 
@@ -242,9 +242,9 @@ ViewerService.prototype.LoadModel = function(svfURL, modelOptions){
     else {
         this.Viewer3D.tearDown();
         this.Viewer3D.setUp();
-        this.Viewer3D.load(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
+        await this.Viewer3D.loadModel(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
     }
-    
+
     this.VueInstance.$emit('modelLoading');
     this.State.svf = svfURL;
     this.State.modelOptions = modelOptions;
@@ -262,7 +262,7 @@ ViewerService.prototype.onModelLoaded = function (item) {
 }
 
 ViewerService.prototype.onModelLoadError = function (errorCode) {
-    
+
     if (this.VueInstance.$listeners['modelLoadError'])
         this.VueInstance.$emit('modelLoadError', errorCode);
     else
