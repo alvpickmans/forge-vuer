@@ -31,5 +31,9 @@
         "vue": "^2.6.10",
         "vue-template-compiler": "^2.6.10"
     },
-    "dependencies": {}
+    "dependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/alvpickmans/forge-vuer.git"
+    }
 }
