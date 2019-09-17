@@ -92,4 +92,8 @@ test/
 
 dist/
 
+#VSCode
+.vs
+.vscode
+
 # End of https://www.gitignore.io/api/node,vuejs
