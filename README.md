@@ -2,19 +2,19 @@
 
 A Vue.js component providing an easy to setup, almost *"plug and play"* experience for Autodesk's Forge Viewer on Vue.js
 
-- [Getting Started](#Getting-Started)
-  - [Prerequisites](#Prerequisites)
-  - [Installing](#Installing)
-- [TL;DR](#TLDR)
-- [Setup](#Setup)
-  - [Access Token](#Access-Token)
-- [Properties](#Properties)
-- [Events](#Events)
-  - [Forge Viewer Events](#Forge-Viewer-Events)
-  - [ForgeVuer Events](#ForgeVuer-Events)
-- [Custom Extensions](#Custom-Extensions)
-- [Versioning](#Versioning)
-- [License](#License)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installing](#installing)
+- [TL;DR](#tldr)
+- [Setup](#setup)
+  - [Access Token](#access-token)
+- [Properties](#properties)
+- [Events](#events)
+  - [Forge Viewer Events](#forge-viewer-events)
+  - [ForgeVuer Events](#forgevuer-events)
+- [Custom Extensions](#custom-extensions)
+- [Versioning](#versioning)
+- [License](#license)
 
 ## Getting Started
 
@@ -23,14 +23,14 @@ These instructions will get you started on how to install, use and customize the
 ### Prerequisites
 
 - A minimal **Vue** app to use the component.
-- The latest Autodesk Forge Viewer styling and javascript files referenced on the html `head` section.
+- The latest Autodesk Forge Viewer **version 7** styling and javascript files referenced on the html `head` section.
 
 ```html
 <head>
     [...]
     <!-- Autodesk Forge Viewer files -->
-    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v6.0" type="text/css">
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.min.js?v=v6.0"></script>
+    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css" type="text/css">
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
     [...]
 </head>
 ```
@@ -152,14 +152,14 @@ export default{
 ## Properties
 The component has some properties to configure and customize it.
 
-| Prop | Type | Default | Required |Description |
-| --- | --- | --- | --- | --- |
-| `id` |`String` | `forge-vuer` | `false` |This defines the `id` attribute of the DOM element that will host the Viewer |
-| `getAccessToken` | `Function` | - | `true` | Function that will provide a valid access token to the Viewer by calling the `onSuccess` callback. |
-| `urn` | `String` | - | `false` | Urn of the file to load. Make sure the file has already been [translated](https://forge.autodesk.com/en/docs/model-derivative/v2/tutorials/prepare-file-for-viewer/). | 
-| `options` | `Object` | - | `false` | Options used to [initialize](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Initializer/#new-initializer-options-callback) the Viewer instance. The only property that will not be used is `getAccessToken`, as it is replace by the corresponding function passed as a component's property. |
-| `headless` | `Boolean` | `false` | `false` | This property defines if the viewer is meant to be use in [headless](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/headless/) mode. |
-| `extensions` | `Object` | - | `false` | Object containing the custom extensions. See [custom extensions](#custom-extensions) for more detail.
+| Prop             | Type       | Default      | Required | Description                                                                                                                                                                                                                                                                                                   |
+| ---------------- | ---------- | ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | `String`   | `forge-vuer` | `false`  | This defines the `id` attribute of the DOM element that will host the Viewer                                                                                                                                                                                                                                  |
+| `getAccessToken` | `Function` | -            | `true`   | Function that will provide a valid access token to the Viewer by calling the `onSuccess` callback.                                                                                                                                                                                                            |
+| `urn`            | `String`   | -            | `false`  | Urn of the file to load. Make sure the file has already been [translated](https://forge.autodesk.com/en/docs/model-derivative/v2/tutorials/prepare-file-for-viewer/).                                                                                                                                         |
+| `options`        | `Object`   | -            | `false`  | Options used to [initialize](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Initializer/#new-initializer-options-callback) the Viewer instance. The only property that will not be used is `getAccessToken`, as it is replace by the corresponding function passed as a component's property. |
+| `headless`       | `Boolean`  | `false`      | `false`  | This property defines if the viewer is meant to be use in [headless](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/headless/) mode.                                                                                                                                                                  |
+| `extensions`     | `Object`   | -            | `false`  | Object containing the custom extensions. See [custom extensions](#custom-extensions) for more detail.                                                                                                                                                                                                         |
 
 
 
@@ -174,10 +174,10 @@ As described on Forge Viewer [API documentation](https://autodeskviewer.com/view
 
 As an example:
 
-| Original Event | Subscribed on component |
-| --- | --- |
+| Original Event            | Subscribed on component   |
+| ------------------------- | ------------------------- |
 | `SELECTION_CHANGED_EVENT` | `@selection-change-event` |
-| `PROGRESS_UPDATE_EVENT` | `@progress-update-event` |
+| `PROGRESS_UPDATE_EVENT`   | `@progress-update-event`  |
 
 Internally, on creation it will try to map the component's events to the corresponding on the Viewer, providing an easy interface to subscribe to any original event.
 Any data associated that an event might return is encapsulated on a single object to allow for an automated mapping. This means that your subscribing function will have a single input argument containing all parameters passed by the event.
@@ -214,15 +214,15 @@ export default{
 ### ForgeVuer Events
 Additionally, the component provides some additional events that allows to act when certain actions happen during the component's execution.
 
-| Name | Arguments | Description |
-| --- | --- | --- |
-| `error` | `Error` | This event is fired whenever any error that hasn't been handle in any other way (internally by Forge emitting their events or some other of these custom events). When fired, this event will have as input the actual error that has been thrown.|
-| `documentLoading` | - | Event fired when a new `urn` has been provided and the process of loading its associated document starts. |
-| `documentLoadError` | `Error` | Fired when Forge fails to load a document. If no function is subscribed to this event, the default `Error` event will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*|
-| `viewerStarted` | `Viewer3D` instance | Event fired when the Viewer3D has been initialized, passing this instance as function argument. |
-| `modelLoading` | - | Fired when the model associated with the document starts to load. |
-| `modelLoaded` | `model` | Fired when the model is successfully loaded. The argument is a [Model](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Model/) instance.|
-| `modelLoadError` | `Error` | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `Error` event will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*| 
+| Name                | Arguments           | Description                                                                                                                                                                                                                                        |
+| ------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `error`             | `Error`             | This event is fired whenever any error that hasn't been handle in any other way (internally by Forge emitting their events or some other of these custom events). When fired, this event will have as input the actual error that has been thrown. |
+| `documentLoading`   | -                   | Event fired when a new `urn` has been provided and the process of loading its associated document starts.                                                                                                                                          |
+| `documentLoadError` | `Error`             | Fired when Forge fails to load a document. If no function is subscribed to this event, the default `Error` event will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*                                         |
+| `viewerStarted`     | `Viewer3D` instance | Event fired when the Viewer3D has been initialized, passing this instance as function argument.                                                                                                                                                    |
+| `modelLoading`      | -                   | Fired when the model associated with the document starts to load.                                                                                                                                                                                  |
+| `modelLoaded`       | `model`             | Fired when the model is successfully loaded. The argument is a [Model](https://forge.autodesk.com/en/docs/viewer/v6/reference/Viewing/Model/) instance.                                                                                            |
+| `modelLoadError`    | `Error`             | Fired when Forge fails to load a model. If no function is subscribed to this event, the default `Error` event will be thrown. The `Error` passed as argument contains the Forge `errorCode` reference.*                                            |
 
 > *For a detailed list of Forge ErrorCodes and their meaning, visit [this blog post](https://forge.autodesk.com/cloud_and_mobile/2016/01/error-codes-in-view-and-data-api.html)
 
