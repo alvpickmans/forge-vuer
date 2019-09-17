@@ -1,6 +1,6 @@
 {
     "name": "forge-vuer",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Vue Component for Autodesk Forge Viewer",
     "main": "dist/ForgeVuer.umd.js",
     "module": "dist/ForgeVuer.esm.js",
@@ -31,5 +31,9 @@
         "vue": "^2.6.10",
         "vue-template-compiler": "^2.6.10"
     },
-    "dependencies": {}
+    "dependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/alvpickmans/forge-vuer.git"
+    }
 }
