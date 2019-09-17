@@ -1,33 +1,35 @@
 {
-  "name": "forge-vuer",
-  "version": "0.0.1",
-  "description": "Vue Component for Autodesk Forge Viewer",
-  "main": "dist/ForgeVuer.umd.js",
-  "module": "dist/ForgeVuer.esm.js",
-  "unpkg": "dist/ForgeVuer.min.js",
-  "browser": {
-    "./sfc": "src/ForgeVuer.vue"
-  },
-  "scripts": {
-    "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
-    "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/ForgeVuer.umd.js",
-    "build:es": "rollup --config build/rollup.config.js --format es --file dist/ForgeVuer.esm.js",
-    "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/ForgeVuer.min.js"
-  },
-  "author": "Alvaro Ortega Pickmans",
-  "license": "MIT",
-  "devDependencies": {
-    "@babel/core": "^7.4.4",
-    "@babel/plugin-proposal-class-properties": "^7.4.4",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "rollup": "^1.11.3",
-    "rollup-plugin-babel": "^4.3.2",
-    "rollup-plugin-buble": "^0.19.6",
-    "rollup-plugin-commonjs": "^9.3.4",
-    "rollup-plugin-terser": "^4.0.4",
-    "rollup-plugin-vue": "^5.0.0",
-    "vue": "^2.6.10",
-    "vue-template-compiler": "^2.6.10"
-  },
-  "dependencies": {}
+    "name": "forge-vuer",
+    "version": "0.0.0",
+    "description": "Vue Component for Autodesk Forge Viewer",
+    "main": "dist/ForgeVuer.umd.js",
+    "module": "dist/ForgeVuer.esm.js",
+    "unpkg": "dist/ForgeVuer.min.js",
+    "browser": {
+        "./sfc": "src/ForgeVuer.vue"
+    },
+    "scripts": {
+        "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
+        "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/ForgeVuer.umd.js",
+        "build:es": "rollup --config build/rollup.config.js --format es --file dist/ForgeVuer.esm.js",
+        "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/ForgeVuer.min.js",
+        "version": "npm run build && git add -A dist",
+        "postversion": "git push && git push --tags"
+    },
+    "author": "Alvaro Ortega Pickmans",
+    "license": "MIT",
+    "devDependencies": {
+        "@babel/core": "^7.4.4",
+        "@babel/plugin-proposal-class-properties": "^7.4.4",
+        "babel-plugin-transform-class-properties": "^6.24.1",
+        "rollup": "^1.11.3",
+        "rollup-plugin-babel": "^4.3.2",
+        "rollup-plugin-buble": "^0.19.6",
+        "rollup-plugin-commonjs": "^9.3.4",
+        "rollup-plugin-terser": "^4.0.4",
+        "rollup-plugin-vue": "^5.0.0",
+        "vue": "^2.6.10",
+        "vue-template-compiler": "^2.6.10"
+    },
+    "dependencies": {}
 }
