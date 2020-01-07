@@ -181,6 +181,7 @@ ViewerService.prototype.RegisterEvents = function () {
         if (eventType == null)
             throw new Error(`Event '${vueEventName}' doesn't exist on Forge Viewer`);
 
+        //Avaliable event list: https://forge.autodesk.com/en/docs/viewer/v7/reference/Viewing/
         let emitterFunction = Utils.CreateEmitterFunction(this.VueInstance, vueEventName);
         this.Events[vueEventName] = emitterFunction;
 
@@ -220,7 +221,6 @@ ViewerService.prototype.onDocumentLoadSuccess = function (doc) {
 
 ViewerService.prototype.GetViewerInstance = function (container, configuration, headless) {
     let config = this.GetViewer3DConfig();
-    console.log(config)
     if (headless === true)
         return new this.AutodeskViewing.Viewer3D(this.ViewerContainer, config);
 
