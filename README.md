@@ -227,7 +227,7 @@ Additionally, the component provides some additional events that allows to act w
 
 > *For a detailed list of Forge ErrorCodes and their meaning, visit [this blog post](https://forge.autodesk.com/cloud_and_mobile/2016/01/error-codes-in-view-and-data-api.html)
 
-## Custom Extensions
+## Custom Extensions (6.*)
 
 One of the most powerful features of Autodesk Forge Viewer is the ability to add custom functionality via **Extensions**. Registering custom extensions to the component's Viewer instance can be done just through the `extensions` component property. The only difference with the common [examples](https://forge.autodesk.com/en/docs/viewer/v6/tutorials/extensions/) found is that the extension implementation must be wrapped within a function so the component can register them at runtime.
 
@@ -363,6 +363,180 @@ export default{
 }
 
 </script>
+```
+
+## Custom Extensions (7.*)
+
+There has been [breaking changes](https://forge.autodesk.com/blog/breaking-change-forge-viewerloadextension) since 6.*. Also, you need [CSS classes](https://forge.autodesk.com/blog/what-icons-are-provided-viewer-stylesheet) to set the icon of the buttons.
+
+```js
+// Example from https://forge.autodesk.com/en/docs/viewer/v6/tutorials/toolbar-button/#step-1-detect-the-toolbar
+// my-custom-toolbar.js
+
+export default function (AutodeskViewing) {
+
+    return class ToolbarExtension extends AutodeskViewing.Extension {
+        viewer;
+        options;
+        subToolbar;
+
+        constructor(viewer, options) {
+            super(viewer, options);
+            this.viewer = viewer;
+            this.options = options;
+        }
+
+        load = function () {
+            if (this.viewer.toolbar) {
+                // Toolbar is already available, create the UI
+                this.createUI();
+            } else {
+                // Toolbar hasn't been created yet, wait until we get notification of its creation
+                this.onToolbarCreatedBinded = this.onToolbarCreated.bind(this);
+                this.viewer.addEventListener(AutodeskViewing.TOOLBAR_CREATED_EVENT, this.onToolbarCreatedBinded);
+            }
+
+            return true;
+        }
+
+        unload = function () {
+            this.viewer.toolbar.removeControl(this.subToolbar);
+            return true;
+        };
+
+        onToolbarCreated = function () {
+            this.viewer.removeEventListener(AutodeskViewing.TOOLBAR_CREATED_EVENT, this.onToolbarCreatedBinded);
+            this.onToolbarCreatedBinded = null;
+            this.createUI();
+        };
+
+        createUI = async function () {
+            let viewer = this.viewer;
+            const vC = await viewer.loadExtension('Autodesk.ViewCubeUi');
+
+            // Button 1
+            let button1 = new AutodeskViewing.UI.Button('my-view-front-button');
+            button1.onClick = function () {
+                vC.setViewCube('front');
+            };
+            button1.addClass('my-view-front-button');
+            button1.setToolTip('View front');
+            button1.setIcon('adsk-icon-first'); 
+
+            // Button 2
+            let button2 = new AutodeskViewing.UI.Button('my-view-back-button');
+            button2.onClick = function () {
+                vC.setViewCube('back');
+            };
+            button2.addClass('my-view-back-button');
+            button2.setToolTip('View Back');
+            button2.setIcon('adsk-icon-second');
+
+            // SubToolbar
+            this.subToolbar = new AutodeskViewing.UI.ControlGroup('my-custom-view-toolbar');
+            this.subToolbar.addControl(button1);
+            this.subToolbar.addControl(button2);
+
+            viewer.toolbar.addControl(this.subToolbar);
+        };
+    }
+}
+```
+
+Moreover, the function for checking load module has been changed (See `/services/Utils.js`):
+```js
+        // If extension already registered
+        if (AutodeskViewing.theExtensionManager.isAvailable(name)) {
+            registeredExtensions.push(name);
+            continue;
+        }
+```
+
+## Detailed implementation note (nuxt.js, 2 legged authtication, OSS bucket approch)
+
+Note that Hub approch requires 3 legged oauth. If you are not going to implement redirection and user management, you can use OSS bucket approch instead.
+Follow session **Access Token** and perform a online 2 legged or 3 legged authentication.
+If you are using Hub approch, follow [this guide](https://github.com/Autodesk-Forge/forge-derivatives-explorer) or upload files [here](https://derivatives.autodesk.io/), [a360](https://a360.autodesk.com/drive/app/) or [another viewer](https://viewer.autodesk.com/)
+If you are using Bucket approch, follow [this guide](https://forge.autodesk.com/en/docs/data/v2/tutorials/app-managed-bucket/). If you are feeling puzzled, read [this article](https://forge.autodesk.com/blog/oss-manager-migrated-autodeskio-server) and manually upload the files [in their new website](https://oss-manager.autodesk.io/).
+
+If you are using plain Vue, `/sample/index.html` will be enough for you. Host it on a web host, host domain must match with the app in forge web console.
+If you are using SSR framework (e.g. [Nuxt](https://nuxtjs.org/) ), you are recommended to directly copy the source codes in `/src` into `/components`, even with inner folder (i.e. `/components/forge`). `/src/index.js` can be omited, as nuxt will handle it instead.
+Then wrap it into a plugin (e.g. `/plugins/forge-vuer.js`):
+
+```js
+import Vue from 'vue';
+//import ForgeVuer from 'forge-vuer';
+import ForgeVuer from '~/components/forge/ForgeVuer'
+
+Vue.component('forge-vuer', ForgeVuer);
+```
+
+Since you have no direct access in head session, you can use `head()` to tell nuxt to add them. ([Article](https://nuxtjs.org/api/pages-head/)) 
+Adding them into vue page will minimalize the effect. Extensions can be a k-v map e.g. `/pages/forge.vue`:
+```vue
+<template> 
+    <no-ssr placeholder="Loading...">
+        <forge-vuer
+          :getAccessToken="handleAccessToken"
+          :urn="myObjectUrn"
+          @progress-update-event="updateProgress"
+          @selection-changed-event="spamLog"
+          @viewerStarted="spamLog"
+          @error="errorLog"
+          :style="mapStyle"
+          :extensions="extensions"
+        />
+    </no-ssr>
+</template>
+<scripts>
+
+<script>
+import myAwesomeExtension from "~/components/forge/extensions/myAwesomeExtension";
+import myCustomToolbar from "~/components/forge/extensions/myCustomToolbar";
+...
+export default {
+    head() {
+        return {
+        script: [
+            {
+            src:
+                "https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"
+            } //defer: true
+        ],
+        link: [
+            {
+            rel: "stylesheet",
+            href:
+                "https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
+            }
+        ]
+        };
+    },
+    data() {
+        return {
+            tokenPkg: {},
+            treeNodePkg: {},
+            modelProgress: 0,
+            extensions: { 
+                myAwesomeExtension, 
+                myCustomToolbar 
+            }
+        };
+    },
+  ...
+</scripts>
+```
+
+Finally tell nuxt to load the plugin with SSR disabled (`nuxt.config.js`):
+```js
+  /*
+  ** Plugins to load before mounting the App
+  */
+  plugins: [
+    //'@/plugins/vuetify',
+    //...
+    { src: '@/plugins/forge-vuer', ssr: false },
+  ],
 ```
 
 ## Versioning

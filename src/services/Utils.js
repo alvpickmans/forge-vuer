@@ -13,7 +13,7 @@ const RegisterCustomExtensions = function (AutodeskViewing, customExtensions) {
         let name = extensionNames[i];
 
         // If extension already registered
-        if(AutodeskViewing.theExtensionManager.getExtension(name) != null){
+        if (AutodeskViewing.theExtensionManager.isAvailable(name)) {
             registeredExtensions.push(name);
             continue;
         }
@@ -21,7 +21,7 @@ const RegisterCustomExtensions = function (AutodeskViewing, customExtensions) {
         let ExtensionCtor = customExtensions[name];
 
         let extended = new ExtensionCtor(AutodeskViewing);
-        
+
         let result = AutodeskViewing.theExtensionManager.registerExtension(name, extended);
         if (result === true)
             registeredExtensions.push(name);

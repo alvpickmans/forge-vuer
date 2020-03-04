@@ -4,7 +4,7 @@ import component from "./ForgeVuer.vue";
 export function install(Vue) {
 	if (install.installed) return;
 	install.installed = true;
-	Vue.component('ForgeVuer', component);
+	Vue.component('forge-vuer', component);
 }
 
 // Create module definition for Vue.use()

@@ -1,38 +1,39 @@
 <html>
-    <head>
-        <title>ForgeVuer Sample</title>
-        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-        <!-- Autodesk Forge Viewer files -->
-        <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/style.min.css?v=v6.0" type="text/css">
-        <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/viewer3D.js?v=v6.0"></script>
-    </head>
-  <body>
-    <div id="app">
-      <forge-vuer
-        :set-access-token="getToken"
-        :urn="urn"></forge-vuer>
-    </div>
+
+<head>
+    <title>ForgeVuer Sample</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Autodesk Forge Viewer files -->
+    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css" type="text/css">
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
     <script src="https://unpkg.com/vue"></script>
     <script src="../dist/ForgeVuer.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <forge-vuer :get-access-token="getToken" :urn="urn"></forge-vuer>
+    </div>
     <script>
         new Vue({
             el: '#app',
-            data: function(){
-                return{
+            data: function () {
+                return {
                     // Hardcoded variables for example
                     token: "eyJhbGciOiJIUzI1NiIsImtpZCI6Imp3dF9zeW1tZXRyaWNfa2V5In0.eyJjbGllbnRfaWQiOiJHRXhBWWhVQnlvdXVPNUd5U3FQM1BWR3B5azc5Z1N3aCIsImV4cCI6MTU1NzA5MDgzNSwic2NvcGUiOlsiYnVja2V0OmNyZWF0ZSIsImJ1Y2tldDpkZWxldGUiLCJidWNrZXQ6cmVhZCIsImRhdGE6Y3JlYXRlIiwiZGF0YTpyZWFkIiwiZGF0YTp3cml0ZSIsInZpZXdhYmxlczpyZWFkIl0sImF1ZCI6Imh0dHBzOi8vYXV0b2Rlc2suY29tL2F1ZC9qd3RleHA2MCIsImp0aSI6IldhREJzOUIzeE1hR2lkckpxNm9BNU1zcXZPeWpLUnQxeTlxRWlBQk4wODFTTWNEQU9HRXBjMnJ1bVRENzlUd28ifQ.7ylQYIQoe1KW-gH1sxia0h-Cj_yS5qk1HHi9Naxffvo",
                     urn: "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6c2Rhc2Rhc2QvcmFjX2Jhc2ljX3NhbXBsZV9wcm9qZWN0LnJ2dA==",
                 }
             },
-            methods:{
-                getToken: function(onSuccess){
+            methods: {
+                getToken(onSuccess) {
                     // This method should make a call to an API to retrieve
                     // a new token each time this is called.
                     // For simplicity, this sample loads it from a hardcoded variable.
-                    onSuccess(this.token, 3600)               
+                    onSuccess(this.token, 3599)
                 },
             }
         })
     </script>
-  </body>
+</body>
+
 </html>
