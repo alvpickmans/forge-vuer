@@ -200,7 +200,7 @@ ViewerService.prototype.SetHeadless = function(headless) {
         this.Viewer3D.uninitialize();
         this.Viewer3D = null;
 
-        if (this.State.svf)
+        if (this.State.svf && this.State.doc)
             this.LoadModel(this.State.svf, this.State.modelOptions, this.State.doc);
     }
 };
@@ -225,9 +225,9 @@ ViewerService.prototype.onDocumentLoadSuccess = function(doc) {
 ViewerService.prototype.GetViewerInstance = function(container, configuration, headless) {
     let config = this.GetViewer3DConfig();
     if (headless === true)
-        return new this.AutodeskViewing.Viewer3D(this.ViewerContainer, config);
+        return new this.AutodeskViewing.Private.Viewer3D(this.ViewerContainer, config);
 
-    return new this.AutodeskViewing.GuiViewer3D(this.ViewerContainer, config);
+    return new this.AutodeskViewing.Private.GuiViewer3D(this.ViewerContainer, config);
 }
 
 ViewerService.prototype.LoadModel = async function(svfURL, modelOptions, doc) {
