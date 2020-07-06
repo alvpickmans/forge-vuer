@@ -15,7 +15,7 @@ const CustomEventNames = [
  * @param {Object} Autodesk Forge Viewer Autodesk SDK
  * @param {Object} VueInstance Vue Instance
  */
-const ViewerService = function (Autodesk, VueInstance) {
+const ViewerService = function(Autodesk, VueInstance) {
 
     // Autodesk Viewing object
     this.AutodeskViewing = Autodesk.Viewing;
@@ -54,7 +54,7 @@ const ViewerService = function (Autodesk, VueInstance) {
  * @param {String} containerId Id of the DOM element to host the viewer
  * @param {Function} getTokenMethod Function to retrieve the token, which will execute a callback
  */
-ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMethod, options, headless) {
+ViewerService.prototype.LaunchViewer = async function(containerId, getTokenMethod, options, headless) {
 
     let viewerOptions = Object.assign({}, options, {
         getAccessToken: getTokenMethod
@@ -77,7 +77,7 @@ ViewerService.prototype.LaunchViewer = async function (containerId, getTokenMeth
     })
 }
 
-ViewerService.prototype.Initialize = function () {
+ViewerService.prototype.Initialize = function() {
     this.State.initialized = true;
 
     if (typeof this.State.urn === 'string' && this.State.urn.trim().length > 0)
@@ -88,8 +88,8 @@ ViewerService.prototype.Initialize = function () {
  * Sets the CustomExtensions object.
  * @param {Object} extensions Object where keys will be the extensions names and values should be functions to initialize new extensions.
  */
-ViewerService.prototype.SetCustomExtensions = function (extensions) {
-    if (Object.values(extensions).some(value => typeof (value) != 'function')) {
+ViewerService.prototype.SetCustomExtensions = function(extensions) {
+    if (Object.values(extensions).some(value => typeof(value) != 'function')) {
         throw new Error("Extensions should be an object where its values are valid extension functions.");
     }
 
@@ -100,7 +100,7 @@ ViewerService.prototype.SetCustomExtensions = function (extensions) {
  * Determines if the ViewerService has any custom extensions
  * @return {Boolean} True if it has any custom extensions.
  */
-ViewerService.prototype.HasCustomExtensions = function () {
+ViewerService.prototype.HasCustomExtensions = function() {
     return this.CustomExtensions != null && Object.keys(this.CustomExtensions).length > 0;
 }
 
@@ -108,8 +108,11 @@ ViewerService.prototype.HasCustomExtensions = function () {
  * Creates a new Viewer3DConfig with custom extensions, if any
  * @returns {Object} Viewer3DConfig
  */
-ViewerService.prototype.GetViewer3DConfig = function () {
-    let config3d = {};
+ViewerService.prototype.GetViewer3DConfig = function() {
+    let config3d = {
+        //https://stackoverflow.com/questions/60100029/failed-calling-executeuserfunction-with-error-instancetreenull-maxtreedepth
+        disabledExtensions: { hyperlink: true }
+    };
 
     if (this.HasCustomExtensions())
         config3d['extensions'] = Utils.RegisterCustomExtensions(this.AutodeskViewing, this.CustomExtensions);
@@ -122,7 +125,7 @@ ViewerService.prototype.GetViewer3DConfig = function () {
  * emmiters for the corresponding ForgeViewer events.
  * @param {String[]} events All Vue instance event names.
  */
-ViewerService.prototype.SetEvents = function (events) {
+ViewerService.prototype.SetEvents = function(events) {
 
     this.Events = events
         .filter(name => CustomEventNames.indexOf(name) == -1)
@@ -138,7 +141,7 @@ ViewerService.prototype.SetEvents = function (events) {
  * it will try to encoded to base64.
  * https://forge.autodesk.com/en/docs/model-derivative/v2/tutorials/prepare-file-for-viewer
  */
-ViewerService.prototype.LoadDocument = function (urn) {
+ViewerService.prototype.LoadDocument = function(urn) {
 
     this.State.urn = urn;
 
@@ -167,7 +170,7 @@ ViewerService.prototype.LoadDocument = function (urn) {
  * Register the View3D events according to those supplied by
  * the Vuer component
  */
-ViewerService.prototype.RegisterEvents = function () {
+ViewerService.prototype.RegisterEvents = function() {
 
     let eventNames = Object.keys(this.Events);
     if (eventNames.length <= 0)
@@ -189,7 +192,7 @@ ViewerService.prototype.RegisterEvents = function () {
     }
 }
 
-ViewerService.prototype.SetHeadless = function (headless) {
+ViewerService.prototype.SetHeadless = function(headless) {
     let currentHeadless = this.State.headless;
     this.State.headless = headless;
 
@@ -197,12 +200,12 @@ ViewerService.prototype.SetHeadless = function (headless) {
         this.Viewer3D.uninitialize();
         this.Viewer3D = null;
 
-        if (this.State.svf)
-            this.LoadModel(this.State.svf, this.State.modelOptions);
+        if (this.State.svf && this.State.doc)
+            this.LoadModel(this.State.svf, this.State.modelOptions, this.State.doc);
     }
 };
 
-ViewerService.prototype.onDocumentLoadSuccess = function (doc) {
+ViewerService.prototype.onDocumentLoadSuccess = function(doc) {
 
     let geometries = doc.getRoot().search({ 'type': 'geometry' });
     if (geometries.length === 0) {
@@ -216,30 +219,40 @@ ViewerService.prototype.onDocumentLoadSuccess = function (doc) {
         sharedPropertyDbPath: doc.getFullPath(doc.getRoot().findPropertyDbPath())
     };
 
-    this.LoadModel(svf, modelOptions);
+    this.LoadModel(svf, modelOptions, doc);
 }
 
-ViewerService.prototype.GetViewerInstance = function (container, configuration, headless) {
+ViewerService.prototype.GetViewerInstance = function(container, configuration, headless) {
     let config = this.GetViewer3DConfig();
     if (headless === true)
-        return new this.AutodeskViewing.Viewer3D(this.ViewerContainer, config);
+        return new this.AutodeskViewing.Private.Viewer3D(this.ViewerContainer, config);
 
-    return new this.AutodeskViewing.GuiViewer3D(this.ViewerContainer, config);
+    return new this.AutodeskViewing.Private.GuiViewer3D(this.ViewerContainer, config);
 }
 
-ViewerService.prototype.LoadModel = async function (svfURL, modelOptions) {
+ViewerService.prototype.LoadModel = async function(svfURL, modelOptions, doc) {
 
     // If Viewer3D is null, it needs to be created and started.
     if (this.Viewer3D == null) {
         this.Viewer3D = this.GetViewerInstance(this.ViewerContainer, this.GetViewer3DConfig(), this.State.headless);
 
-        this.Viewer3D.start(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
+        //Ref: https://github.com/Autodesk-Forge/forge-buckets-tools/blob/master/www/index.html
+        //Fix for loading 2D model. Unknown side effect. 
+        this.Viewer3D.start();
+
+        //This will cause a bug in 2D model (Why there is a 3D view in a DWG?)
+        let geometryItems = [];
+        geometryItems.push(doc.getRoot().getDefaultGeometry()); //doc.getRoot().search({ "role": "3d", "type": "geometry" });
+
+        this.Viewer3D.loadDocumentNode(doc, geometryItems[0]).then(this.onModelLoaded.bind(this)).catch(this.onModelLoadError.bind(this));
+
+        //2D Model will not work. Strange.
+        //this.Viewer3D.start(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
         this.RegisterEvents();
 
         // Emitting Viewer3D Started event
         this.VueInstance.$emit('viewerStarted', this.Viewer3D);
-    }
-    else {
+    } else {
         this.Viewer3D.tearDown();
         this.Viewer3D.setUp();
         await this.Viewer3D.loadModel(svfURL, modelOptions, this.onModelLoaded.bind(this), this.onModelLoadError.bind(this));
@@ -247,21 +260,22 @@ ViewerService.prototype.LoadModel = async function (svfURL, modelOptions) {
 
     this.VueInstance.$emit('modelLoading');
     this.State.svf = svfURL;
+    this.State.doc = doc;
     this.State.modelOptions = modelOptions;
 }
 
-ViewerService.prototype.onDocumentLoadError = function (errorCode) {
+ViewerService.prototype.onDocumentLoadError = function(errorCode) {
     if (this.VueInstance.$listeners['documentLoadError'])
         this.VueInstance.$emit('documentLoadError', errorCode);
     else
         Utils.EmitError(this.VueInstance, new Error('Failed to load document. Error Code: ' + errorCode));
 }
 
-ViewerService.prototype.onModelLoaded = function (item) {
+ViewerService.prototype.onModelLoaded = function(item) {
     this.VueInstance.$emit('modelLoaded', item);
 }
 
-ViewerService.prototype.onModelLoadError = function (errorCode) {
+ViewerService.prototype.onModelLoadError = function(errorCode) {
 
     if (this.VueInstance.$listeners['modelLoadError'])
         this.VueInstance.$emit('modelLoadError', errorCode);
